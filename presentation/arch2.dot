@@ -1,0 +1,37 @@
+digraph architecture {
+  fontname=Verdana;
+  fontsize=12;
+  graph [nodesep=0.8,dpi=300];
+  compound=true;
+
+  node [shape=box,fontname=Verdana,style=rounded,fontsize=12,color=1,colorscheme=pastel18];
+  edge [fontname=Verdana,fontsize=10,color=darkgreen,colorscheme=pastel18,style=dotted];
+
+  subgraph cluster_framework {
+    label="Inspector";
+    style="filled";
+    colorscheme="pastel18";
+    color=2;
+  };
+
+  subgraph cluster_memory {
+      label="Copy-On-Write overlay"
+      shared_mmap_file [label="Shared memory maped files"];
+  }
+
+  tthread [shape=box, label="libthread.so"];
+  child [shape=box,label="child of process"];
+  process -> child [label="pthread_create() -> clone()"];
+
+  tthread -> "data flow/thread schedule";
+  tthread -> shared_mmap_file [label="mprotect", headport=cluster_memory];
+  tthread -> process [label="replaces pthread/malloc family"];
+
+  shared_mmap_file -> child [label="Heap/Global Data", headport=cluster_memory];
+  shared_mmap_file -> process [label="Heap/Global Data", headport=cluster_memory];
+
+  "MMU" -> Memorymanagement [label="Page Fault"];
+  Memorymanagement -> tthread [label="Segfault Signal"];
+
+  {rank=same tthread shared_mmap_file};
+}

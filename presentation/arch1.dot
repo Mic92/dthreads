@@ -1,0 +1,19 @@
+digraph architecture {
+  fontname=Verdana;
+  fontsize=12;
+  graph [nodesep=0.8,dpi=300];
+
+  node [fontname=Verdana,shape=record,style=rounded,fontsize=12,color=1,colorscheme=pastel18];
+  edge [fontname=Verdana,fontsize=10,color=darkgreen,colorscheme=pastel18,style=dotted];
+
+  struct_arch[label="{{
+    {Application | Library | OS | CPU} |
+    {{Thread 1 | Thread 2} | <libipt> Intel Decoder Library | Perf events | Intel PT ISA}|
+    {{Thread 3 | Thread N} | <tthread> libtthread | Memory management | MMU}
+  }}"];
+
+  struct_graph[label="C.P. Graph| <data>Data flow/Thread Schedule|<exec>Execution Flow"]
+
+  struct_arch:libipt -> struct_graph:data;
+  struct_arch:tthread -> struct_graph:exec;
+}
