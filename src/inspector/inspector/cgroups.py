@@ -1,5 +1,4 @@
 import os
-import sys
 import signal
 from . import Error
 
@@ -19,12 +18,21 @@ def find_mount(cgroup_type):
     return None
 
 
-class PerfEvent():
-    def __init__(self, name):
-        mount = find_mount("perf_event")
+def perf_events(name):
+    return Group(name, "perf_events")
+
+
+def cpu(name):
+    return Group(name, "cpu")
+
+
+class Group():
+    def __init__(self, name, type_):
+        mount = find_mount(type_)
         if mount is None:
-            msg = "mount for perf_event cgroup not found in /proc/mounts. " \
-                  "Has kernel CONFIG_PERF_EVENTS=y set?"
+            msg = "mount for %s cgroup not found in /proc/mounts." % type_
+            if type_ == "perf_events":
+                msg += " Has kernel CONFIG_PERF_EVENTS=y set?"
             raise Error(msg)
         self.name = name
         self.mountpoint = os.path.join(mount, name)
@@ -62,7 +70,7 @@ class PerfEvent():
             raise Error(msg)
 
     def destroy(self):
-        self._move_processes(PerfEvent(""))
+        self._move_processes(Group(""))
 
         with open(os.path.join(self.mountpoint, "tasks"), "r") as f:
             for line in f:

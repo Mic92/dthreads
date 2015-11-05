@@ -19,7 +19,7 @@ def run(command,
         snapshot_mode=False):
 
     cgroup_name = "inspector-%d" % os.getpid()
-    cgroup = cgroups.PerfEvent(cgroup_name)
+    cgroup = cgroups.perf_event(cgroup_name)
     cgroup.create()
 
     barrier = mp.Barrier(2)

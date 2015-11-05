@@ -9,7 +9,7 @@ TEST_ROOT = os.path.realpath(os.path.dirname(__file__))
 
 class CgroupTest(unittest.TestCase):
     def test_create(self):
-        with cgroups.PerfEvent("inspector-test") as c:
+        with cgroups.perf_event("inspector-test") as c:
             pid = str(os.getpid())
             c.addPids(pid)
             f = open(os.path.join(c.mountpoint, "tasks"))
