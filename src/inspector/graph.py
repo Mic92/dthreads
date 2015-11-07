@@ -3,6 +3,7 @@ import json
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from collections import defaultdict, OrderedDict
 
 
@@ -26,8 +27,7 @@ def autolabel(rects):
                  va='bottom',
                  rotation="vertical")
 
-PATTERNS = ('-', '+', 'x', '\\', '*', 'o', 'O', '.')
-COLORS = ('b', 'g', 'r', 'c', 'm', 'y',)
+PATTERNS = (' ', '////', 'x', ' ', '*', 'o', 'O', '.')
 
 
 def mean(v):
@@ -81,23 +81,23 @@ def generate_graph1(log):
                 normalized_values.append(mean(v["times"]) / w)
                 std_values.append(std(v["times"]))
             index = np.arange(0, len(normalized_values) * 2, 2)
-            rect = plt.bar(index + bar_width * (i + 0.5),
-                           normalized_values,
-                           bar_width,
-                           yerr=std_values,
-                           color=COLORS[i],
-                           alpha=opacity,
-                           label=lib,
-                           hatch=PATTERNS[i])
-            #autolabel(rect)
+            plt.bar(index + bar_width * (i + 0.5),
+                    normalized_values,
+                    bar_width,
+                    yerr=std_values,
+                    alpha=opacity,
+                    label=lib,
+                    hatch=PATTERNS[i],
+                    color=cm.Greys(1.*i/len(benchmarks)),
+                    error_kw=dict(ecolor='black'))
+            # autolabel(rect)
             i += 1
             index += 0
         plt.xlabel('Benchmarks')
         plt.ylabel('Overhead')
-        plt.title(name, y=1.00)
-        plt.suptitle("Times by benchmarks and libraries for %d threads" %
-                     thread,
-                     y=1.00)
+        plt.title("Times by benchmarks and libraries for %d threads" %
+                  thread,
+                  y=1.00)
         plt.xticks(index + bar_width,
                    [n for n in bench_names],
                    rotation=50)
@@ -144,21 +144,21 @@ def generate_graph2(log):
                 normalized_values.append(mean(v["times"]) / w)
                 std_values.append(std(v["times"]))
             index = np.arange(0, len(normalized_values) * 2, 2)
-            rect = plt.bar(index + bar_width * (i + 0.5),
-                           normalized_values,
-                           bar_width,
-                           yerr=std_values,
-                           color=COLORS[i],
-                           alpha=opacity,
-                           label=thread,
-                           hatch=PATTERNS[i])
-            #autolabel(rect)
+            plt.bar(index + bar_width * (i + 0.5),
+                    normalized_values,
+                    bar_width,
+                    yerr=std_values,
+                    alpha=opacity,
+                    label=thread,
+                    hatch=PATTERNS[i],
+                    color=cm.Greys(1.*i/len(per_lib)),
+                    error_kw=dict(ecolor='black'))
+            # autolabel(rect)
             i += 1
             index += 0
         plt.xlabel('Benchmarks')
         plt.ylabel('Overhead')
-        plt.title(name, y=1)
-        plt.suptitle("Times by benchmarks and threads for %s" % lib, y=1)
+        plt.title("Times by benchmarks and threads for %s" % lib, y=1)
         plt.xticks(index + bar_width * 2,
                    sorted(bench_names),
                    rotation=60)
