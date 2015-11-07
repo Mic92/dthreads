@@ -29,8 +29,7 @@ def run(command,
         tthread_path=default_library_path(),
         stdin=None,
         stdout=None,
-        stderr=None,
-        preexec_fn=None):
+        stderr=None):
     log_file = tempfile.TemporaryFile()
     log_fd = log_file.fileno()
     pass_fds = [0, 1, 2, log_fd]
@@ -43,6 +42,5 @@ def run(command,
                              env=env,
                              stdin=stdin,
                              stdout=stdout,
-                             stderr=stderr,
-                             preexec_fn=preexec_fn)
+                             stderr=stderr)
     return Process(popen, log_file)

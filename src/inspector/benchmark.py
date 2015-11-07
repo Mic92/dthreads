@@ -1,10 +1,11 @@
 import os
 import sys
-import glob
+import re
 import argparse
 import json
 import subprocess
 import inspector
+from inspector import cgroups
 if sys.version_info >= (3, 3):
     from shlex import quote
 else:
@@ -15,6 +16,7 @@ EVAL_ROOT = os.path.realpath(os.path.join(SCRIPT_ROOT, "../../eval"))
 TOTAL_THREADS = os.system("nproc --all")
 TEST_PATH = os.path.join(EVAL_ROOT, "tests")
 DATASET_HOME = os.path.join(EVAL_ROOT, "datasets")
+
 
 class NCores:
     def to_param(self, cores):
@@ -66,50 +68,90 @@ def dataset_home(subdir):
     return os.path.join(DATASET_HOME, subdir)
 
 
+class Result:
+    def __init__(self,
+                 wall_time=None,
+                 args=None,
+                 log_size=None):
+        self.wall_time = wall_time
+        self.args = args
+        self.log_size = log_size
+
+    def _read_file_to_dict(self, path):
+        data = {}
+        with open(path) as stat_file:
+            for line in stat_file:
+                key, value = line.split(" ", 1)
+                data[key] = value.strip()
+        return data
+
+    def read_cpuacct_cgroup(self, cpuacct):
+        stat_path = os.path.join(cpuacct.mountpoint, "cpuacct.stat")
+        stats = self._read_file_to_dict(stat_path)
+        self.system_time = stats["system"]
+        self.user_time = stats["user"]
+        percpu_path = os.path.join(cpuacct.mountpoint, "cpuacct.usage_percpu")
+        with open(percpu_path) as percpu:
+            self.time_per_cpu = list(map(int, percpu.read().split()))
+
+    def read_memory_cgroup(self, memory):
+        stat_path = os.path.join(memory.mountpoint, "memory.stat")
+        stats = self._read_file_to_dict(stat_path)
+        self.pgfault = stats["pgfault"]
+        self.pgmajfault = stats["pgmajfault"]
+
+
 class Benchmark():
     def __init__(self, name, args, command=None):
         self.name = name
-        self.args = args
+        self._args = args
         if command is None:
             self.command = name
         else:
             self.command = command
         self.perf_command = "perf"
 
-    def run(self, cores, perf_log, with_pt, with_tthread):
-        def format_arg(arg):
+    def args(self, cores=16):
+        res = []
+        for arg in self._args:
             if issubclass(type(arg), NCores):
-                return str(arg.to_param(cores))
-            return str(arg)
-        args = list(map(format_arg, self.args))
+                res.append(str(arg.to_param(cores)))
+            else:
+                res.append(str(arg))
+        return res
+
+    def run(self, cores, perf_log, with_pt, with_tthread):
         os.chdir(test_path(self.name))
-        cmd = ["./" + self.command] + args
-        durations = []
-        log_sizes = []
+        cmd = ["./" + self.command] + self.args(cores)
         if with_tthread:
             libtthread = inspector.default_tthread_path()
         else:
             libtthread = None
         for c in cmd:
             assert type(c) is not None
-        for i in range(6):
-            print("$ " + " ".join(cmd) +
-                  (" pt" if with_pt else "") +
-                  (" tthread" if with_tthread else ""))
-            if os.path.exists(perf_log):
-                os.remove(perf_log)
-            proc = inspector.run(cmd,
-                                 perf_command=self.perf_command,
-                                 processor_trace=with_pt,
-                                 tthread_path=libtthread,
-                                 perf_log=perf_log)
-            status = proc.wait()
-            if status.exit_code != 0:
-                raise OSError("command: %s\nfailed with: %d" %
-                              (" ".join(cmd), status.exit_code))
-            durations.append(status.duration)
-            log_sizes.append(os.path.getsize(perf_log))
-        return durations, log_sizes, self.args(cores)
+        print("$ " + " ".join(cmd) +
+              (" pt" if with_pt else "") +
+              (" tthread" if with_tthread else ""))
+        if os.path.exists(perf_log):
+            os.remove(perf_log)
+        with cgroups.memory("inspector-%d" % os.getpid()) as memory:
+            with cgroups.cpuacct("inspector-%d" % os.getpid()) as cpuacct:
+                proc = inspector.run(cmd,
+                                     perf_command=self.perf_command,
+                                     processor_trace=with_pt,
+                                     tthread_path=libtthread,
+                                     perf_log=perf_log,
+                                     additional_cgroups=[memory, cpuacct])
+                status = proc.wait()
+                if status.exit_code != 0:
+                    raise OSError("command: %s\nfailed with: %d" %
+                                  (" ".join(cmd), status.exit_code))
+                r = Result(wall_time=status.duration,
+                           args=self.args(cores),
+                           log_size=os.path.getsize(perf_log))
+                r.read_cpuacct_cgroup(cpuacct)
+                r.read_memory_cgroup(memory)
+        return r
 
 benchmarks = [
     Benchmark("canneal",
@@ -187,6 +229,13 @@ def parse_args():
     return parser.parse_args()
 
 
+def build_project():
+    sh(["cmake", "-DCMAKE_BUILD_TYPE=Release", "-DBENCHMARK=On"])
+    sh(["cmake", "--build", "."])
+    sh(["cmake", "--build", ".", "--target", "build-parsec"])
+    sh(["cmake", "--build", ".", "--target", "build-phoenix"])
+
+
 def main():
     args = parse_args()
     output = os.path.realpath(args.output)
@@ -200,12 +249,9 @@ def main():
 
     os.chdir(os.path.join(SCRIPT_ROOT, "../.."))
 
-    sh(["cmake", "-DCMAKE_BUILD_TYPE=Release", "-DBENCHMARK=On"])
-    sh(["cmake", "--build", "."])
-    sh(["cmake", "--build", ".", "--target", "build-parsec"])
-    sh(["cmake", "--build", ".", "--target", "build-phoenix"])
-
     path = os.path.join(output, "log.json")
+
+    build_project()
 
     if os.path.exists(path):
         log = json.load(open(path))
@@ -217,34 +263,55 @@ def main():
         set_online_cpus(threads)
         for bench in benchmarks:
             run_name = "%s-%d" % (bench.name, threads)
-            if run_name in log:
-                print(">> skip %s" % run_name)
-                continue
             bench.perf_command = perf_command
             try:
                 sys.stderr.write(">> run %s\n" % bench.name)
 
-                log[run_name] = {"threads": threads}
+                if run_name not in log:
+                    log[run_name] = {
+                            "threads": threads,
+                            "libs": {},
+                            "args": [],
+                    }
 
                 def run(name, pt, tthread):
-                    times, sizes, args = bench.run(threads,
-                                                   perf_log,
-                                                   pt,
-                                                   tthread)
-                    log[run_name][name] = {
-                            "times": times,
-                            "log_sizes": sizes,
-                            "args": args
-                    }
-                    return
+                    libs = log[run_name]["libs"]
+                    if name not in libs:
+                        libs[name] = {
+                                "times": [],
+                                "log_sizes": [],
+                                "system_time": [],
+                                "user_time": [],
+                                "time_per_cpu": [],
+                                "minor_faults": [],
+                                "major_faults": [],
+                                "args": None
+                        }
+                    runs = max(6 - len(libs[name]["times"]), 0)
+                    if runs <= 0:
+                        print("skip %s -> %d" % (name, runs))
+                    for i in range(runs):
+                        result = bench.run(threads,
+                                           perf_log,
+                                           pt,
+                                           tthread)
+                        lib = libs[name]
+                        lib["times"].append(result.wall_time)
+                        lib["log_sizes"].append(result.log_size)
+                        lib["system_time"].append(result.system_time)
+                        lib["user_time"].append(result.user_time)
+                        lib["time_per_cpu"].append(result.time_per_cpu)
+                        lib["minor_faults"].append(result.pgfault)
+                        lib["major_faults"].append(result.pgmajfault)
+                        log[run_name]["args"] = result.args
+                        with open(path, "w") as f:
+                            json.dump(log, f, sort_keys=True, indent=4)
 
                 run("pthread",   False, False)
                 run("tthread",   False, True)
                 run("pt",        True,  False)
                 run("inspector", True,  True)
 
-                with open(path, "w") as f:
-                    json.dump(log, f, sort_keys=True, ident=4)
             except OSError as e:
                 print("failed to run %s: %s" % (bench.name, e))
 

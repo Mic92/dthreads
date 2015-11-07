@@ -27,11 +27,11 @@ def drop_privileges(user, group):
 
 
 class Command():
-    def __init__(self, tthread_path=None, user=None, group=None, cgroup=None):
+    def __init__(self, tthread_path=None, user=None, group=None, cgroups=None):
         self.tthread_path = tthread_path
         self.user = user
         self.group = group
-        self.cgroup = cgroup
+        self.cgroups = cgroups
 
     def exec(self, command, barrier):
         env = os.environ.copy()
@@ -44,6 +44,7 @@ class Command():
             barrier.wait(timeout=3)
         except BrokenBarrierError:
             print("Parent process timed out", file=sys.stderr)
-        self.cgroup.addPids(os.getpid())
+        for cgroup in self.cgroups:
+            cgroup.addPids(os.getpid())
         drop_privileges(self.user, self.group)
         os.execvpe(command[0], command, env)

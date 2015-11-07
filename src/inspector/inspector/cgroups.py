@@ -18,12 +18,16 @@ def find_mount(cgroup_type):
     return None
 
 
-def perf_events(name):
-    return Group(name, "perf_events")
+def perf_event(name):
+    return Group(name, "perf_event")
 
 
-def cpu(name):
-    return Group(name, "cpu")
+def cpuacct(name):
+    return Group(name, "cpuacct")
+
+
+def memory(name):
+    return Group(name, "memory")
 
 
 class Group():
@@ -36,6 +40,7 @@ class Group():
             raise Error(msg)
         self.name = name
         self.mountpoint = os.path.join(mount, name)
+        self.type_ = type_
 
     def addPids(self, *pids):
         tasks = os.path.join(self.mountpoint, "tasks")
@@ -70,7 +75,7 @@ class Group():
             raise Error(msg)
 
     def destroy(self):
-        self._move_processes(Group(""))
+        self._move_processes(Group("", self.type_))
 
         with open(os.path.join(self.mountpoint, "tasks"), "r") as f:
             for line in f:
