@@ -17,18 +17,25 @@ def run(command,
         group=None,
         processor_trace=True,
         snapshot_mode=False,
-        additional_cgroups=[]):
+        additional_cgroups=[],
+        perf_event_cgroup=None):
 
     cgroup_name = "inspector-%d" % os.getpid()
 
-    perf_cgroup = cgroups.perf_event(cgroup_name)
-    perf_cgroup.create()
+    if perf_event_cgroup is None:
+        perf_event_cgroup = cgroups.perf_event(cgroup_name)
+        perf_event_cgroup.create()
+        remove_cgroup = True
+    else:
+        remove_cgroup = False
+
+    additional_cgroups.append(perf_event_cgroup)
 
     barrier = mp.Barrier(2)
     tthread_cmd = tthread.Command(tthread_path=tthread_path,
                                   user=user,
                                   group=group,
-                                  cgroups=additional_cgroups + [perf_cgroup])
+                                  cgroups=additional_cgroups)
     process = mp.Process(target=tthread_cmd.exec,
                          args=(command, barrier,))
     process.start()
@@ -37,6 +44,7 @@ def run(command,
                     perf_log,
                     barrier,
                     process,
-                    perf_cgroup,
+                    perf_event_cgroup,
                     processor_trace=processor_trace,
-                    snapshot_mode=snapshot_mode)
+                    snapshot_mode=snapshot_mode,
+                    remove_cgroup=remove_cgroup)

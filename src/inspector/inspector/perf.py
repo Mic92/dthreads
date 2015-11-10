@@ -24,6 +24,7 @@ def run(perf_command,
         process,
         cgroup,
         processor_trace=True,
+        remove_cgroup=True,
         snapshot_mode=False):
     command = [perf_command,
                "record",
@@ -50,15 +51,20 @@ def run(perf_command,
         barrier.wait(timeout=3)
     except BrokenBarrierError:
         raise Error("Child process timed out")
-    return Process(perf_process, process, cgroup)
+    return Process(perf_process, process, cgroup, remove_cgroup=remove_cgroup)
 
 
 class Process:
-    def __init__(self, perf_process, traced_process, cgroup):
+    def __init__(self,
+                 perf_process,
+                 traced_process,
+                 cgroup,
+                 remove_cgroup=True):
         self.perf_process = perf_process
         self.traced_process = traced_process
         self.cgroup = cgroup
         self.start_time = time.time()
+        self.remove_cgroup = remove_cgroup
 
     def _wait(self):
         while True:
@@ -79,5 +85,6 @@ class Process:
         except OSError as e:
             raise Error("Failed to wait for result of processes '%s'" % e)
         finally:
-            self.cgroup.destroy()
+            if self.remove_cgroup:
+                self.cgroup.destroy()
         raise Error("Program error! should not be reached")

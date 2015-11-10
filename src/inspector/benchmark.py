@@ -1,10 +1,10 @@
 import os
 import sys
-import re
 import argparse
 import json
 import subprocess
 import inspector
+import signal
 from inspector import cgroups
 if sys.version_info >= (3, 3):
     from shlex import quote
@@ -72,10 +72,12 @@ class Result:
     def __init__(self,
                  wall_time=None,
                  args=None,
-                 log_size=None):
+                 log_size=None,
+                 perf_stats={}):
         self.wall_time = wall_time
         self.args = args
         self.log_size = log_size
+        self.perf_stats = perf_stats
 
     def _read_file_to_dict(self, path):
         data = {}
@@ -94,11 +96,59 @@ class Result:
         with open(percpu_path) as percpu:
             self.time_per_cpu = list(map(int, percpu.read().split()))
 
-    def read_memory_cgroup(self, memory):
-        stat_path = os.path.join(memory.mountpoint, "memory.stat")
-        stats = self._read_file_to_dict(stat_path)
-        self.pgfault = stats["pgfault"]
-        self.pgmajfault = stats["pgmajfault"]
+    def calculate_compressed_logsize(self, log_path):
+        lz4 = subprocess.Popen(('lz4c', '--stdout', log_path),
+                               stdout=subprocess.PIPE)
+        output = subprocess.check_output(('wc', '--bytes'), stdin=lz4.stdout)
+        lz4.wait()
+        self.compressed_logsize = int(output)
+
+EVENTS = [
+         "branch-instructions",
+         "bus-cycles",
+         "cache-misses",
+         "cache-references",
+         "cpu-cycles",
+         "instructions",
+         "ref-cycles",
+         "alignment-faults",
+         "context-switches",
+         "cpu-clock",
+         "cpu-migrations",
+         "major-faults",
+         "minor-faults",
+         "page-faults",
+         "task-clock"
+]
+
+
+class PerfStat():
+    def __init__(self, cgroup_name):
+        self.cmd = ["perf",
+                    "stat",
+                    "--field-separator", "\t",
+                    "--all-cpus",
+                    "--event", ",".join(EVENTS),
+                    "--cgroup", cgroup_name]
+        print(" ".join(self.cmd))
+
+    def run(self):
+        self.process = subprocess.Popen(self.cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+
+    def result(self):
+        self.process.send_signal(signal.SIGINT)
+        res = self.process.communicate()[1].decode("utf-8")
+        stats = {}
+        for l in res.split("\n"):
+            columns = l.split("\t")
+            if len(columns) < 3:
+                continue
+            value = columns[0]
+            name = columns[2]
+            stats[name] = value
+        return stats
 
 
 class Benchmark():
@@ -134,23 +184,30 @@ class Benchmark():
               (" tthread" if with_tthread else ""))
         if os.path.exists(perf_log):
             os.remove(perf_log)
-        with cgroups.memory("inspector-%d" % os.getpid()) as memory:
-            with cgroups.cpuacct("inspector-%d" % os.getpid()) as cpuacct:
-                proc = inspector.run(cmd,
-                                     perf_command=self.perf_command,
-                                     processor_trace=with_pt,
-                                     tthread_path=libtthread,
-                                     perf_log=perf_log,
-                                     additional_cgroups=[memory, cpuacct])
-                status = proc.wait()
-                if status.exit_code != 0:
-                    raise OSError("command: %s\nfailed with: %d" %
-                                  (" ".join(cmd), status.exit_code))
-                r = Result(wall_time=status.duration,
-                           args=self.args(cores),
-                           log_size=os.path.getsize(perf_log))
-                r.read_cpuacct_cgroup(cpuacct)
-                r.read_memory_cgroup(memory)
+        cgroup_name = "inspector"
+
+        with cgroups.cpuacct(cgroup_name) as cpuacct, \
+                cgroups.perf_event(cgroup_name) as perf_event:
+            perf = PerfStat(perf_event.name)
+            perf.run()
+            proc = inspector.run(cmd,
+                                 perf_command=self.perf_command,
+                                 processor_trace=with_pt,
+                                 tthread_path=libtthread,
+                                 perf_log=perf_log,
+                                 perf_event_cgroup=perf_event,
+                                 additional_cgroups=[cpuacct])
+            status = proc.wait()
+            if status.exit_code != 0:
+                raise OSError("command: %s\nfailed with: %d" %
+                              (" ".join(cmd), status.exit_code))
+            perf_stats = perf.result()
+            r = Result(wall_time=status.duration,
+                       args=self.args(cores),
+                       log_size=os.path.getsize(perf_log),
+                       perf_stats=perf_stats)
+            r.read_cpuacct_cgroup(cpuacct)
+            r.calculate_compressed_logsize(perf_log)
         return r
 
 benchmarks = [
@@ -280,13 +337,14 @@ def main():
                         libs[name] = {
                                 "times": [],
                                 "log_sizes": [],
+                                "compressed_logsizes": [],
                                 "system_time": [],
                                 "user_time": [],
                                 "time_per_cpu": [],
-                                "minor_faults": [],
-                                "major_faults": [],
                                 "args": None
                         }
+                        for event in EVENTS:
+                            libs[name][event] = []
                     runs = max(6 - len(libs[name]["times"]), 0)
                     if runs <= 0:
                         print("skip %s -> %d" % (name, runs))
@@ -298,11 +356,12 @@ def main():
                         lib = libs[name]
                         lib["times"].append(result.wall_time)
                         lib["log_sizes"].append(result.log_size)
+                        lib["compressed_logsizes"].append(result.compressed_logsize)
                         lib["system_time"].append(result.system_time)
                         lib["user_time"].append(result.user_time)
                         lib["time_per_cpu"].append(result.time_per_cpu)
-                        lib["minor_faults"].append(result.pgfault)
-                        lib["major_faults"].append(result.pgmajfault)
+                        for event in EVENTS:
+                            lib[event].append(result.perf_stats[event])
                         log[run_name]["args"] = result.args
                         with open(path, "w") as f:
                             json.dump(log, f, sort_keys=True, indent=4)

@@ -49,8 +49,8 @@ class Group():
                 for pid in pids:
                     f.write("%s\n" % pid)
         except OSError as e:
-            msg = "Failed to add process '%s' to cgroup '%s': %s" \
-                  % (pid, self.mountpoint, e)
+            msg = "Failed to add processes '%d' to cgroup '%s': %s" \
+                  % (pids[0], self.mountpoint, e)
             raise Error(msg)
 
     def create(self):
