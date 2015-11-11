@@ -390,7 +390,16 @@ public:
   // Change the page to read-only mode.
   void mprotectRead(void *addr, int pageNo) {
     _pageInfo[pageNo] = PAGE_ACCESS_READ;
-    mprotect(addr, xdefines::PageSize, PROT_READ);
+    int res = mprotect(addr, xdefines::PageSize, PROT_READ);
+	if (res != 0) {
+		fprintf(stderr,
+				"Failed to set page read-only: mprotect(%p, %d, %d): %s\n",
+				addr,
+				xdefines::PageSize,
+				PROT_READ,
+				strerror(errno));
+		::abort();
+	}
   }
 
   // Change the page to r/w mode.
@@ -398,7 +407,16 @@ public:
     if (_pageOwner[pageNo] == getpid()) {
       _pageInfo[pageNo] = PAGE_ACCESS_READ_WRITE;
     }
-    mprotect(addr, xdefines::PageSize, PROT_READ | PROT_WRITE);
+    int res = mprotect(addr, xdefines::PageSize, PROT_READ | PROT_WRITE);
+	if (res != 0) {
+		fprintf(stderr,
+				"Failed to set page read-write: mprotect(%p, %d, %d): %s\n",
+				addr,
+				xdefines::PageSize,
+				PROT_READ|PROT_WRITE,
+				strerror(errno));
+		::abort();
+	}
   }
 
   inline bool isSharedPage(int pageNo) {

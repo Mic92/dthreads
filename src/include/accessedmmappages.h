@@ -22,7 +22,16 @@ public:
 
   void reset() {
     for (pages::const_iterator it = _pages.begin(); it != _pages.end(); ++it) {
-      mprotect(*it, xdefines::PageSize, PROT_NONE);
+      int res = mprotect(*it, xdefines::PageSize, PROT_NONE);
+      if (res != 0) {
+          fprintf(stderr,
+                  "Failed to reset page protection mprotect(%p, %d, %d): %s\n",
+                  *it,
+                  xdefines::PageSize,
+                  PROT_NONE,
+                  strerror(errno));
+          ::abort();
+      }
     }
     _pages.clear();
   }
