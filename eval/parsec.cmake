@@ -40,11 +40,6 @@ set(PARSEC_APP_PATH ${CMAKE_CURRENT_SOURCE_DIR}/parsec-3.0/pkgs)
 set(TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
 include(AddParsecBenchmark)
 
-AddParsecBenchmark(blackscholes
-  ARGS 8 in_10M.txt prices.txt
-  PATH apps/blackscholes
-  ARCHIVE input_native.tar)
-
 if(${NCORES} EQUAL 8)
   set(CANNEAL_THREADS 7)
   set(DEDUP_THREADS 2)
@@ -55,6 +50,11 @@ else() # EQUAL 2
   set(CANNEAL_THREADS 1)
   set(DEDUP_THREADS 1)
 endif()
+
+AddParsecBenchmark(blackscholes
+  ARGS ${NCORES} in_64K.txt prices.txt
+  PATH apps/blackscholes
+  ARCHIVE input_simlarge.tar)
 
 AddParsecBenchmark(canneal
   ARGS ${CANNEAL_THREADS} 15000 2000 ${TEST_PATH}/canneal/400000.nets 128
@@ -91,7 +91,7 @@ AddParsecBenchmark(raytrace
   EXE rtview
   ARCHIVE input_native.tar)
 
-set(parsec_benchmarks canneal dedup ferret swaptions streamcluster vips raytrace)
+set(parsec_benchmarks blacksholes canneal dedup ferret swaptions streamcluster vips raytrace)
 foreach(bench ${parsec_benchmarks})
   list(APPEND parsec_build_targets bench-${bench})
 endforeach()
