@@ -27,14 +27,21 @@ def drop_privileges(user, group):
 
 
 class Command():
-    def __init__(self, tthread_path=None, user=None, group=None, cgroups=None):
+    def __init__(self,
+                 tthread_path=None,
+                 user=None,
+                 group=None,
+                 cgroups=None,
+                 env={}):
         self.tthread_path = tthread_path
         self.user = user
         self.group = group
         self.cgroups = cgroups
+        self.env = env
 
     def exec(self, command, barrier):
         env = os.environ.copy()
+        env.update(self.env)
         if self.tthread_path is not None:
             env["LD_PRELOAD"] = str(self.tthread_path)
             env["TTHREAD_NO_LOG"] = "1"

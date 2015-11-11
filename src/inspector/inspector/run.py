@@ -18,7 +18,8 @@ def run(command,
         processor_trace=True,
         snapshot_mode=False,
         additional_cgroups=[],
-        perf_event_cgroup=None):
+        perf_event_cgroup=None,
+        env={}):
 
     cgroup_name = "inspector-%d" % os.getpid()
 
@@ -35,7 +36,8 @@ def run(command,
     tthread_cmd = tthread.Command(tthread_path=tthread_path,
                                   user=user,
                                   group=group,
-                                  cgroups=additional_cgroups)
+                                  cgroups=additional_cgroups,
+                                  env=env)
     process = mp.Process(target=tthread_cmd.exec,
                          args=(command, barrier,))
     process.start()

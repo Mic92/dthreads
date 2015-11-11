@@ -152,7 +152,7 @@ class PerfStat():
 
 
 class Benchmark():
-    def __init__(self, name, args, command=None):
+    def __init__(self, name, args, command=None, env={}):
         self.name = name
         self._args = args
         if command is None:
@@ -160,6 +160,7 @@ class Benchmark():
         else:
             self.command = command
         self.perf_command = "perf"
+        self.env = env
 
     def args(self, cores=16):
         res = []
@@ -196,7 +197,8 @@ class Benchmark():
                                  tthread_path=libtthread,
                                  perf_log=perf_log,
                                  perf_event_cgroup=perf_event,
-                                 additional_cgroups=[cpuacct])
+                                 additional_cgroups=[cpuacct],
+                                 env=self.env)
             status = proc.wait()
             if status.exit_code != 0:
                 raise OSError("command: %s\nfailed with: %d" %
@@ -210,27 +212,31 @@ class Benchmark():
             r.calculate_compressed_logsize(perf_log)
         return r
 
-benchmarks = [
+increasing_threads_benchmarks = [
     Benchmark("canneal",
               [CannealThreads(),
                10000,
                2000,
                test_path("canneal/100000.nets"),
                32]),
+    Benchmark("blacksholes",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32]),
     Benchmark("dedup",
               ["-c",
                "-p",
                "-t", DedupThreads(),
-               #"-i", test_path("dedup/FC-6-x86_64-disc1.iso"),
-               "-i", test_path("dedup/media.dat"),
+               "-i", test_path("dedup/FC-6-x86_64-disc1.iso"),
                "-o", "output.dat.ddp"]),
-    Benchmark("ferret",
-              [test_path("ferret/corel"),
-               "lsh", test_path("ferret/queries"),
-               10,
-               20,
-               1,
-               "output.txt"]),
+    # Benchmark("ferret",
+    #           [test_path("ferret/corel"),
+    #            "lsh", test_path("ferret/queries"),
+    #            10,
+    #            20,
+    #            1,
+    #            "output.txt"]),
     Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 50000,
@@ -245,18 +251,18 @@ benchmarks = [
                "none",
                "output.txt",
                NCores()]),
-    Benchmark("vips",
-              ["im_benchmark",
-               test_path("vips/orion_18000x18000.v"),
-               "output.v"]),
-    Benchmark("raytrace",
-              [test_path("raytrace/thai_statue.obj"),
-               "-automove",
-               "-nthreads",
-               NCores(),
-               "-frames 200",
-               "-res 1920 1080"],
-              command="rtview"),
+    # Benchmark("vips",
+    #           ["im_benchmark",
+    #            test_path("vips/orion_18000x18000.v"),
+    #            "output.v"]),
+    # Benchmark("raytrace",
+    #           [test_path("raytrace/thai_statue.obj"),
+    #            "-automove",
+    #            "-nthreads",
+    #            NCores(),
+    #            "-frames 200",
+    #            "-res 1920 1080"],
+    #           command="rtview"),
     Benchmark("histogram", [dataset_home("histogram_datafiles/large.bmp")]),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
@@ -269,6 +275,89 @@ benchmarks = [
     Benchmark("kmeans", ["-d", 3, "-c", 500, "-p", 50000, "-s", 500]),
     Benchmark("matrix_multiply", [2000, 2000]),
     Benchmark("pca", ["-r", 4000, "-c", 4000, "-s", 100])
+]
+
+increasing_worksize_benchmarks = [
+    Benchmark("word_count-10mb",
+              [dataset_home("word_count_datafiles/word_10MB.txt")]),
+    Benchmark("word_count-50mb",
+              [dataset_home("word_count_datafiles/word_50MB.txt")]),
+    Benchmark("word_count-100mb",
+              [dataset_home("word_count_datafiles/word_100MB.txt")]),
+    Benchmark("linear_regression-50mb",
+              [dataset_home("linear_regression_datafiles/"
+                            "key_file_50MB.txt")]),
+    Benchmark("linear_regression-100mb",
+              [dataset_home("linear_regression_datafiles/"
+                            "key_file_100MB.txt")]),
+    Benchmark("linear_regression-500mb",
+              [dataset_home("linear_regression_datafiles/"
+                            "key_file_500MB.txt")]),
+    Benchmark("string_match-50mb",
+              [dataset_home("string_match_datafiles/key_file_50MB.txt")]),
+    Benchmark("string_match-100mb",
+              [dataset_home("string_match_datafiles/key_file_100MB.txt")]),
+    Benchmark("string_match-500mb",
+              [dataset_home("string_match_datafiles/key_file_100MB.txt")]),
+    Benchmark("histogram-small",
+              [dataset_home("histogram_datafiles/small.bmp")]),
+    Benchmark("histogram-med",
+              [dataset_home("histogram_datafiles/med.bmp")]),
+    Benchmark("histogram-large",
+              [dataset_home("histogram_datafiles/large.bmp")]),
+]
+
+increasing_computation_benchmarks = [
+    Benchmark("swaptions-16",
+              ["-ns", 128,
+               "-sm", 50000,
+               "-nt", NCores()]),
+    Benchmark("swaptions-8",
+              ["-ns", 128,
+               "-sm", 25000.0,
+               "-nt", NCores()]),
+    Benchmark("swaptions-4",
+              ["-ns", 128,
+               "-sm", 12500.0,
+               "-nt", NCores()]),
+    Benchmark("swaptions-2",
+              ["-ns", 128,
+               "-sm", 6250.0,
+               "-nt", NCores()]),
+    Benchmark("swaptions-1",
+              ["-ns", 128,
+               "-sm", 3125.0,
+               "-nt", NCores()]),
+    Benchmark("blacksholes-1",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32],
+              env={"NUM_RUNS": 6}),
+    Benchmark("blacksholes-2",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32],
+              env={"NUM_RUNS": 12}),
+    Benchmark("blacksholes-4",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32],
+              env={"NUM_RUNS": 25}),
+    Benchmark("blacksholes-8",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32],
+              env={"NUM_RUNS": 50}),
+    Benchmark("blacksholes-16",
+              [8,
+               test_path("blacksholes/in_10M.txt"),
+               test_path("canneal/prices.txt"),
+               32],
+              env={"NUM_RUNS": 100}),
 ]
 
 
@@ -318,7 +407,7 @@ def main():
     for threads in [16, 8, 4, 2]:
         os.environ["IM_CONCURRENCY"] = str(threads)
         set_online_cpus(threads)
-        for bench in benchmarks:
+        for bench in increasing_threads_benchmarks:
             run_name = "%s-%d" % (bench.name, threads)
             bench.perf_command = perf_command
             try:
