@@ -123,8 +123,8 @@ EVENTS = [
 
 
 class PerfStat():
-    def __init__(self, cgroup_name):
-        self.cmd = ["perf",
+    def __init__(self, cgroup_name, perf_command="perf"):
+        self.cmd = [perf_command,
                     "stat",
                     "--field-separator", "\t",
                     "--all-cpus",
@@ -138,16 +138,22 @@ class PerfStat():
                                         stderr=subprocess.PIPE)
 
     def result(self):
-        self.process.send_signal(signal.SIGINT)
-        res = self.process.communicate()[1].decode("utf-8")
+        try:
+            self.process.send_signal(signal.SIGINT)
+        except OSError as e:
+            print("perf is already stopped: %s" % e)
+        stdout, stderr = self.process.communicate()
         stats = {}
-        for l in res.split("\n"):
+        for l in stderr.decode("utf-8").split("\n"):
             columns = l.split("\t")
             if len(columns) < 3:
                 continue
             value = columns[0]
             name = columns[2]
             stats[name] = value
+        if len(stats) == 0:
+            raise OSError("could not obtain statistics from perf: %s" %
+                          stderr.decode("utf-8"))
         return stats
 
 
@@ -189,7 +195,7 @@ class Benchmark():
 
         with cgroups.cpuacct(cgroup_name) as cpuacct, \
                 cgroups.perf_event(cgroup_name) as perf_event:
-            perf = PerfStat(perf_event.name)
+            perf = PerfStat(perf_event.name, perf_command=self.perf_command)
             perf.run()
             proc = inspector.run(cmd,
                                  perf_command=self.perf_command,
