@@ -388,7 +388,7 @@ def build_project():
     sh(["cmake", "--build", ".", "--target", "build-phoenix"])
 
 
-def main():
+def main(benchmarks, log_name):
     args = parse_args()
     output = os.path.realpath(args.output)
     perf_log = os.path.realpath(args.perf_log)
@@ -401,7 +401,7 @@ def main():
 
     os.chdir(os.path.join(SCRIPT_ROOT, "../.."))
 
-    path = os.path.join(output, "log.json")
+    path = os.path.join(output, log_name)
 
     build_project()
 
@@ -410,10 +410,15 @@ def main():
     else:
         log = {}
 
-    for threads in [16, 8, 4, 2]:
+    if log_name == "increasing-threads":
+        thread_configs = [16, 8, 4, 2]
+    else:
+        thread_configs = [16]
+
+    for threads in thread_configs:
         os.environ["IM_CONCURRENCY"] = str(threads)
         set_online_cpus(threads)
-        for bench in increasing_threads_benchmarks:
+        for bench in benchmarks:
             run_name = "%s-%d" % (bench.name, threads)
             bench.perf_command = perf_command
             try:
@@ -470,4 +475,6 @@ def main():
                 print("failed to run %s: %s" % (bench.name, e))
 
 if __name__ == '__main__':
-    main()
+    main(increasing_threads_benchmarks, "increasing-threads.json")
+    main(increasing_worksize_benchmarks, "increasing-worksize.json")
+    main(increasing_computation_benchmarks, "increasing-computation.json")
