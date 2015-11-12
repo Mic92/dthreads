@@ -48,15 +48,21 @@ def std(v):
     return np.std(v_)
 
 
+alias_map = {
+        "pthread": "pthread",
+        "pt": "pt",
+        "tthread": "xy library",
+        "inspector": "xy"
+}
+
+
 def generate_graph1(log):
     def constructor():
         return defaultdict(OrderedDict)
     per_thread = defaultdict(constructor)
     for bench, per_lib in sorted(json.load(open(log)).items()):
         name, threads = bench.split("-", 1)
-        for lib, data in per_lib.items():
-            if lib == "threads":
-                continue
+        for lib, data in per_lib["libs"].items():
             per_thread[int(threads)][lib][bench] = data
 
     bar_width = 0.40
@@ -70,7 +76,6 @@ def generate_graph1(log):
         pthread_values = []
         for v in benchmarks["pthread"].values():
             pthread_values.append(mean(v["times"]))
-        del benchmarks["pthread"]
 
         i = 0
         for lib, per_lib in benchmarks.items():
@@ -79,14 +84,14 @@ def generate_graph1(log):
             std_values = []
             for v, w in zip(per_lib.values(), pthread_values):
                 normalized_values.append(mean(v["times"]) / w)
-                std_values.append(std(v["times"]))
+                std_values.append(std(map(lambda v: float(v)/w, v["times"])))
             index = np.arange(0, len(normalized_values) * 2, 2)
             plt.bar(index + bar_width * (i + 0.5),
                     normalized_values,
                     bar_width,
                     yerr=std_values,
                     alpha=opacity,
-                    label=lib,
+                    label=alias_map[lib],
                     hatch=PATTERNS[i],
                     color=cm.Greys(1.*i/len(benchmarks)),
                     error_kw=dict(ecolor='black'))
@@ -109,7 +114,7 @@ def generate_graph1(log):
         plt.clf()
 
 
-def generate_graph2(log):
+def generate_graph2(log, aspect, title):
     def constructor():
         return defaultdict(OrderedDict)
     per_lib = defaultdict(constructor)
@@ -121,35 +126,33 @@ def generate_graph2(log):
     for bench, per_bench in sort:
         name, threads = bench.split("-", 1)
         bench_names.add(name)
-        for lib, data in per_bench.items():
-            if lib != "threads":
-                per_lib[lib][int(threads)][bench] = data
+        for lib, data in per_bench["libs"].items():
+            per_lib[lib][int(threads)][bench] = data
 
     bar_width = 0.40
     opacity = 0.4
 
     pthread = per_lib["pthread"]
-    del per_lib["pthread"]
 
     for lib, per_thread in per_lib.items():
         i = 0
         for thread, data in sorted(per_thread.items()):
             pthread_values = []
             for v in pthread[thread].values():
-                pthread_values.append(mean(v["times"]))
+                pthread_values.append(mean(v[aspect]))
 
             normalized_values = []
             std_values = []
             for v, w in zip(data.values(), pthread_values):
-                normalized_values.append(mean(v["times"]) / w)
-                std_values.append(std(v["times"]))
+                normalized_values.append(mean(v[aspect]) / w)
+                std_values.append(std(map(lambda v: float(v)/w, v[aspect])))
             index = np.arange(0, len(normalized_values) * 2, 2)
             plt.bar(index + bar_width * (i + 0.5),
                     normalized_values,
                     bar_width,
                     yerr=std_values,
                     alpha=opacity,
-                    label=thread,
+                    label="%d threads" % thread,
                     hatch=PATTERNS[i],
                     color=cm.Greys(1.*i/len(per_lib)),
                     error_kw=dict(ecolor='black'))
@@ -158,14 +161,15 @@ def generate_graph2(log):
             index += 0
         plt.xlabel('Benchmarks')
         plt.ylabel('Overhead')
-        plt.title("Times by benchmarks and threads for %s" % lib, y=1)
+        plt.title(title % alias_map[lib],
+                  y=1)
         plt.xticks(index + bar_width * 2,
                    sorted(bench_names),
                    rotation=60)
         plt.legend(loc='best')
         plt.grid()
 
-        plt.savefig("benchmarks-%s.pdf" % lib)
+        plt.savefig("benchmarks-%s-%s.pdf" % (aspect, lib))
         plt.tight_layout()
         plt.clf()
 
@@ -179,7 +183,12 @@ def main():
     if len(sys.argv) < 2:
         die("USAGE: %s log.json" % sys.argv[0])
     generate_graph1(sys.argv[1])
-    generate_graph2(sys.argv[1])
+    generate_graph2(sys.argv[1],
+                    "times",
+                    "Times by benchmarks and threads for %s")
+    generate_graph2(sys.argv[1],
+                    "cpu-cycles",
+                    "CPU cycles by benchmarks and threads for %s")
 
 if __name__ == "__main__":
     main()
