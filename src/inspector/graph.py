@@ -31,18 +31,18 @@ PATTERNS = (' ', '////', 'x', ' ', '*', 'o', 'O', '.')
 
 
 def mean(v):
-    if len(v) < 4:
-        return np.std(v)
-    v_ = v.copy()
+    v_ = list(map(float, v))
+    if len(v_) < 4:
+        return np.std(v_)
     v_.remove(max(v_))
     v_.remove(min(v_))
     return np.mean(v_)
 
 
 def std(v):
-    if len(v) < 4:
-        return np.std(v)
-    v_ = v.copy()
+    v_ = list(map(float, v))
+    if len(v_) < 4:
+        return np.std(v_)
     v_.remove(max(v_))
     v_.remove(min(v_))
     return np.std(v_)
