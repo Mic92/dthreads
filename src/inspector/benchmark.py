@@ -13,7 +13,7 @@ else:
 
 SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
 EVAL_ROOT = os.path.realpath(os.path.join(SCRIPT_ROOT, "../../eval"))
-TOTAL_THREADS = os.system("nproc --all")
+TOTAL_THREADS = int(subprocess.check_output(["nproc", "--all"]))
 TEST_PATH = os.path.join(EVAL_ROOT, "tests")
 DATASET_HOME = os.path.join(EVAL_ROOT, "datasets")
 
@@ -158,7 +158,7 @@ class PerfStat():
 
 
 class Benchmark():
-    def __init__(self, name, args, command=None, env={}):
+    def __init__(self, name, args, command=None, env={}, variant=None):
         self.name = name
         self._args = args
         if command is None:
@@ -167,6 +167,7 @@ class Benchmark():
             self.command = command
         self.perf_command = "perf"
         self.env = env
+        self.variant = variant
 
     def args(self, cores=16):
         res = []
@@ -191,7 +192,7 @@ class Benchmark():
               (" tthread" if with_tthread else ""))
         if os.path.exists(perf_log):
             os.remove(perf_log)
-        cgroup_name = "inspector"
+        cgroup_name = "inspector-%d" % os.getpid()
 
         with cgroups.cpuacct(cgroup_name) as cpuacct, \
                 cgroups.perf_event(cgroup_name) as perf_event:
@@ -284,86 +285,103 @@ increasing_threads_benchmarks = [
 ]
 
 increasing_worksize_benchmarks = [
-    Benchmark("word_count-10mb",
-              [dataset_home("word_count_datafiles/word_10MB.txt")]),
-    Benchmark("word_count-50mb",
-              [dataset_home("word_count_datafiles/word_50MB.txt")]),
-    Benchmark("word_count-100mb",
-              [dataset_home("word_count_datafiles/word_100MB.txt")]),
-    Benchmark("linear_regression-50mb",
+    Benchmark("word_count",
+              [dataset_home("word_count_datafiles/word_10MB.txt")],
+              variant="10mb"),
+    Benchmark("word_count",
+              [dataset_home("word_count_datafiles/word_50MB.txt")],
+              variant="50mb"),
+    Benchmark("word_count",
+              [dataset_home("word_count_datafiles/word_100MB.txt")],
+              variant="100mb"),
+    Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
-                            "key_file_50MB.txt")]),
-    Benchmark("linear_regression-100mb",
+                            "key_file_50MB.txt")],
+              variant="50mb"),
+    Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
-                            "key_file_100MB.txt")]),
-    Benchmark("linear_regression-500mb",
+                            "key_file_100MB.txt")],
+              variant="100mb"),
+    Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
-                            "key_file_500MB.txt")]),
-    Benchmark("string_match-50mb",
-              [dataset_home("string_match_datafiles/key_file_50MB.txt")]),
-    Benchmark("string_match-100mb",
-              [dataset_home("string_match_datafiles/key_file_100MB.txt")]),
-    Benchmark("string_match-500mb",
-              [dataset_home("string_match_datafiles/key_file_100MB.txt")]),
-    Benchmark("histogram-small",
-              [dataset_home("histogram_datafiles/small.bmp")]),
-    Benchmark("histogram-med",
-              [dataset_home("histogram_datafiles/med.bmp")]),
-    Benchmark("histogram-large",
-              [dataset_home("histogram_datafiles/large.bmp")]),
+                            "key_file_500MB.txt")],
+              variant="500mb"),
+    Benchmark("string_match",
+              [dataset_home("string_match_datafiles/key_file_50MB.txt")],
+              variant="50mb"),
+    Benchmark("string_match",
+              [dataset_home("string_match_datafiles/key_file_100MB.txt")],
+              variant="100mb"),
+    Benchmark("string_match",
+              [dataset_home("string_match_datafiles/key_file_500MB.txt")],
+              variant="500mb"),
+    Benchmark("histogram",
+              [dataset_home("histogram_datafiles/small.bmp")],
+              variant="small"),
+    Benchmark("histogram",
+              [dataset_home("histogram_datafiles/med.bmp")],
+              variant="med"),
+    Benchmark("histogram",
+              [dataset_home("histogram_datafiles/large.bmp")],
+              variant="large"),
 ]
 
 increasing_computation_benchmarks = [
-    Benchmark("swaptions-16",
+    Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 50000,
-               "-nt", NCores()]),
-    Benchmark("swaptions-8",
+               "-nt", NCores()],
+              variant="16"),
+    Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 25000.0,
-               "-nt", NCores()]),
-    Benchmark("swaptions-4",
+               "-nt", NCores()],
+              variant="8"),
+    Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 12500.0,
-               "-nt", NCores()]),
-    Benchmark("swaptions-2",
+               "-nt", NCores()],
+              variant="4"),
+    Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 6250.0,
-               "-nt", NCores()]),
-    Benchmark("swaptions-1",
+               "-nt", NCores()],
+              variant="2"),
+    Benchmark("swaptions",
               ["-ns", 128,
                "-sm", 3125.0,
-               "-nt", NCores()]),
-    Benchmark("blacksholes-1",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32],
-              env={"NUM_RUNS": 6}),
-    Benchmark("blacksholes-2",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32],
-              env={"NUM_RUNS": 12}),
-    Benchmark("blacksholes-4",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32],
-              env={"NUM_RUNS": 25}),
-    Benchmark("blacksholes-8",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32],
-              env={"NUM_RUNS": 50}),
-    Benchmark("blacksholes-16",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32],
-              env={"NUM_RUNS": 100}),
+               "-nt", NCores()],
+              variant="1"),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_10M.txt"),
+               test_path("blackscholes/prices.txt")],
+              env={"NUM_RUNS": "6"},
+              variant="1"),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_10M.txt"),
+               test_path("blackscholes/prices.txt")],
+              env={"NUM_RUNS": "12"},
+              variant="2"),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_10M.txt"),
+               test_path("blackscholes/prices.txt")],
+              env={"NUM_RUNS": "25"},
+              variant="4"),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_10M.txt"),
+               test_path("blackscholes/prices.txt")],
+              env={"NUM_RUNS": "50"},
+              variant="8"),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_10M.txt"),
+               test_path("blackscholes/prices.txt")],
+              env={"NUM_RUNS": "100"},
+              variant="16"),
 ]
 
 
@@ -388,7 +406,94 @@ def build_project():
     sh(["cmake", "--build", ".", "--target", "build-phoenix"])
 
 
-def main(benchmarks, log_name):
+class BenchmarkSet():
+    def __init__(self,
+                 benchmarks,
+                 log_path,
+                 perf_command,
+                 perf_log):
+        self.benchmarks = benchmarks
+        self.log_path = log_path
+        if os.path.exists(log_path):
+            self.log = json.load(open(log_path))
+        else:
+            self.log = {}
+
+        if self.log_path.endswith("increasing-threads.json"):
+            self.thread_configs = [16, 8, 4, 2]
+        else:
+            self.thread_configs = [16]
+
+        self.perf_command = perf_command
+        self.perf_log = perf_log
+
+    def run_lib(self, name, run_name, bench, threads, pt, tthread):
+        libs = self.log[run_name]["libs"]
+        if name not in libs:
+            libs[name] = {
+                    "times": [],
+                    "log_sizes": [],
+                    "compressed_logsizes": [],
+                    "system_time": [],
+                    "user_time": [],
+                    "time_per_cpu": [],
+                    "args": None
+            }
+            for event in EVENTS:
+                libs[name][event] = []
+        runs = max(6 - len(libs[name]["times"]), 0)
+        if runs <= 0:
+            print("skip %s -> %d" % (name, runs))
+        for i in range(runs):
+            result = bench.run(threads,
+                               self.perf_log,
+                               pt,
+                               tthread)
+            lib = libs[name]
+            lib["times"].append(result.wall_time)
+            lib["log_sizes"].append(result.log_size)
+            lib["compressed_logsizes"].append(result.compressed_logsize)
+            lib["system_time"].append(result.system_time)
+            lib["user_time"].append(result.user_time)
+            lib["time_per_cpu"].append(result.time_per_cpu)
+            for event in EVENTS:
+                lib[event].append(result.perf_stats[event])
+            self.log[run_name]["args"] = result.args
+            with open(self.log_path, "w") as f:
+                json.dump(self.log,
+                          f,
+                          sort_keys=True,
+                          indent=4)
+
+    def run(self):
+        for threads in self.thread_configs:
+            os.environ["IM_CONCURRENCY"] = str(threads)
+            set_online_cpus(threads)
+            for bench in self.benchmarks:
+                if bench.variant:
+                    run_name = "%s-%s-%d" % (bench.name, bench.variant, threads)
+                else:
+                    run_name = "%s-%d" % (bench.name, threads)
+                bench.perf_command = self.perf_command
+                try:
+                    sys.stderr.write(">> run %s\n" % bench.name)
+
+                    if run_name not in self.log:
+                        self.log[run_name] = {
+                                "threads": threads,
+                                "variant": bench.variant,
+                                "libs": {},
+                                "args": [],
+                        }
+
+                    self.run_lib("pthread",   run_name, bench, threads, False, False)
+                    self.run_lib("tthread",   run_name, bench, threads, False, True)
+                    self.run_lib("pt",        run_name, bench, threads, True,  False)
+                    self.run_lib("inspector", run_name, bench, threads, True,  True)
+                except OSError as e:
+                    print("failed to run %s: %s" % (bench.name, e))
+
+def main():
     args = parse_args()
     output = os.path.realpath(args.output)
     perf_log = os.path.realpath(args.perf_log)
@@ -401,80 +506,22 @@ def main(benchmarks, log_name):
 
     os.chdir(os.path.join(SCRIPT_ROOT, "../.."))
 
-    path = os.path.join(output, log_name)
-
     build_project()
 
-    if os.path.exists(path):
-        log = json.load(open(path))
-    else:
-        log = {}
-
-    if log_name == "increasing-threads":
-        thread_configs = [16, 8, 4, 2]
-    else:
-        thread_configs = [16]
-
-    for threads in thread_configs:
-        os.environ["IM_CONCURRENCY"] = str(threads)
-        set_online_cpus(threads)
-        for bench in benchmarks:
-            run_name = "%s-%d" % (bench.name, threads)
-            bench.perf_command = perf_command
-            try:
-                sys.stderr.write(">> run %s\n" % bench.name)
-
-                if run_name not in log:
-                    log[run_name] = {
-                            "threads": threads,
-                            "libs": {},
-                            "args": [],
-                    }
-
-                def run(name, pt, tthread):
-                    libs = log[run_name]["libs"]
-                    if name not in libs:
-                        libs[name] = {
-                                "times": [],
-                                "log_sizes": [],
-                                "compressed_logsizes": [],
-                                "system_time": [],
-                                "user_time": [],
-                                "time_per_cpu": [],
-                                "args": None
-                        }
-                        for event in EVENTS:
-                            libs[name][event] = []
-                    runs = max(6 - len(libs[name]["times"]), 0)
-                    if runs <= 0:
-                        print("skip %s -> %d" % (name, runs))
-                    for i in range(runs):
-                        result = bench.run(threads,
-                                           perf_log,
-                                           pt,
-                                           tthread)
-                        lib = libs[name]
-                        lib["times"].append(result.wall_time)
-                        lib["log_sizes"].append(result.log_size)
-                        lib["compressed_logsizes"].append(result.compressed_logsize)
-                        lib["system_time"].append(result.system_time)
-                        lib["user_time"].append(result.user_time)
-                        lib["time_per_cpu"].append(result.time_per_cpu)
-                        for event in EVENTS:
-                            lib[event].append(result.perf_stats[event])
-                        log[run_name]["args"] = result.args
-                        with open(path, "w") as f:
-                            json.dump(log, f, sort_keys=True, indent=4)
-
-                run("pthread",   False, False)
-                run("tthread",   False, True)
-                run("pt",        True,  False)
-                run("inspector", True,  True)
-
-            except OSError as e:
-                print("failed to run %s: %s" % (bench.name, e))
+    b1 = BenchmarkSet(increasing_threads_benchmarks,
+                      os.path.join(output, "increasing-threads.json"),
+                      perf_command,
+                      perf_log)
+    b2 = BenchmarkSet(increasing_worksize_benchmarks,
+                      os.path.join(output, "increasing-worksize.json"),
+                      perf_command,
+                      perf_log)
+    b3 = BenchmarkSet(increasing_computation_benchmarks,
+                      os.path.join(output, "increasing-computation.json"),
+                      perf_command,
+                      perf_log)
+    for b in [b1, b2, b3]:
+        b.run()
 
 if __name__ == '__main__':
-    main(increasing_threads_benchmarks, "increasing-threads.json")
-    main(increasing_worksize_benchmarks, "increasing-worksize.json")
-    main(increasing_computation_benchmarks, "increasing-computation.json")
+    main()
