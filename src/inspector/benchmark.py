@@ -287,43 +287,43 @@ increasing_threads_benchmarks = [
 increasing_worksize_benchmarks = [
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_10MB.txt")],
-              variant="10mb"),
+              variant="S"),
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_50MB.txt")],
-              variant="50mb"),
+              variant="M"),
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_100MB.txt")],
-              variant="100mb"),
+              variant="L"),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_50MB.txt")],
-              variant="50mb"),
+              variant="S"),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_100MB.txt")],
-              variant="100mb"),
+              variant="M"),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_500MB.txt")],
-              variant="500mb"),
+              variant="L"),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_50MB.txt")],
-              variant="50mb"),
+              variant="S"),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_100MB.txt")],
-              variant="100mb"),
+              variant="M"),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_500MB.txt")],
-              variant="500mb"),
+              variant="L"),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/small.bmp")],
-              variant="small"),
+              variant="S"),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/med.bmp")],
-              variant="med"),
+              variant="M"),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/large.bmp")],
-              variant="large"),
+              variant="L"),
 ]
 
 increasing_computation_benchmarks = [
@@ -493,6 +493,7 @@ class BenchmarkSet():
                 except OSError as e:
                     print("failed to run %s: %s" % (bench.name, e))
 
+
 def main():
     args = parse_args()
     output = os.path.realpath(args.output)
@@ -522,6 +523,7 @@ def main():
                       perf_log)
     for b in [b1, b2, b3]:
         b.run()
+
 
 if __name__ == '__main__':
     main()
