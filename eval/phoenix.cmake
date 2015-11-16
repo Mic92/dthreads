@@ -59,6 +59,10 @@ AddPhoenixBenchmark(word_count
     ${PHOENIX_SRC}/word_count/word_count-pthread.c
     ${PHOENIX_SRC}/word_count/sort-pthread.c)
 
+DownloadDataset(http://csl.stanford.edu/~christos/sw/phoenix/phoenix_regular.tar.gz
+  phoenix_regular.tar.gz
+  ${CMAKE_CURRENT_SOURCE_DIR}/datasets)
+
 AddPhoenixBenchmark(kmeans
   ARGS -d 3 -c 1000 -p 100000 -s 1000
   FILES ${PHOENIX_SRC}/kmeans/kmeans-pthread.c)

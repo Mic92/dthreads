@@ -274,7 +274,8 @@ increasing_threads_benchmarks = [
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_500MB.txt")]),
-    Benchmark("reverse_index", [dataset_home("reverse_index_datafiles")]),
+    Benchmark("reverse_index",
+              [dataset_home("sample_apps/reverse_index/datafiles")]),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_500MB.txt")]),
     Benchmark("word_count",
