@@ -96,6 +96,12 @@ class Result:
         with open(percpu_path) as percpu:
             self.time_per_cpu = list(map(int, percpu.read().split()))
 
+    def read_memory_cgroup(self, memory):
+        stat_path = os.path.join(memory.mountpoint, "memory.stat")
+        stats = self._read_file_to_dict(stat_path)
+        self.pgfault = stats["pgfault"]
+        self.pgmajfault = stats["pgmajfault"]
+
     def calculate_compressed_logsize(self, log_path):
         lz4 = subprocess.Popen(('lz4c', '--stdout', log_path),
                                stdout=subprocess.PIPE)
@@ -196,7 +202,8 @@ class Benchmark():
         cgroup_name = "inspector-%d" % os.getpid()
 
         with cgroups.cpuacct(cgroup_name) as cpuacct, \
-                cgroups.perf_event(cgroup_name) as perf_event:
+                cgroups.perf_event(cgroup_name) as perf_event, \
+                cgroups.memory(cgroup_name) as memory:
             perf = PerfStat(perf_event.name, perf_command=self.perf_command)
             perf.run()
             proc = inspector.run(cmd,
@@ -217,6 +224,7 @@ class Benchmark():
                        log_size=os.path.getsize(perf_log),
                        perf_stats=perf_stats)
             r.read_cpuacct_cgroup(cpuacct)
+            r.read_memory_cgroup(memory)
             r.calculate_compressed_logsize(perf_log)
         return r
 
