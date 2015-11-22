@@ -158,7 +158,7 @@ class PerfStat():
 
 
 class Benchmark():
-    def __init__(self, name, args, command=None, env={}, variant=None):
+    def __init__(self, name, args, command=None, env={}, variant=None, size=None):
         self.name = name
         self._args = args
         if command is None:
@@ -168,6 +168,7 @@ class Benchmark():
         self.perf_command = "perf"
         self.env = env
         self.variant = variant
+        self.size = size
 
     def args(self, cores=16):
         res = []
@@ -226,21 +227,16 @@ increasing_threads_benchmarks = [
                2000,
                test_path("canneal/100000.nets"),
                32]),
-    Benchmark("blacksholes",
-              [8,
-               test_path("blacksholes/in_10M.txt"),
-               test_path("canneal/prices.txt"),
-               32]),
+    Benchmark("blackscholes",
+              [NCores(),
+               test_path("blackscholes/in_64K.txt"),
+               test_path("blackscholes/prices.txt")]),
     Benchmark("dedup",
               ["-c",
                "-p",
                "-t", DedupThreads(),
                "-i", test_path("dedup/FC-6-x86_64-disc1.iso"),
                "-o", "output.dat.ddp"]),
-    Benchmark("blackscholes",
-              [NCores(),
-               test_path("blackscholes/in_64K.txt"),
-               test_path("blackscholes/prices.txt")]),
     # Benchmark("ferret",
     #           [test_path("ferret/corel"),
     #            "lsh", test_path("ferret/queries"),
@@ -292,43 +288,55 @@ increasing_threads_benchmarks = [
 increasing_worksize_benchmarks = [
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_10MB.txt")],
-              variant="S"),
+              variant="small",
+              size=10),
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_50MB.txt")],
-              variant="M"),
+              variant="medium",
+              size=50),
     Benchmark("word_count",
               [dataset_home("word_count_datafiles/word_100MB.txt")],
-              variant="L"),
+              variant="large",
+              size=100),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_50MB.txt")],
-              variant="S"),
+              variant="small",
+              size=50),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_100MB.txt")],
-              variant="M"),
+              variant="medium",
+              size=100),
     Benchmark("linear_regression",
               [dataset_home("linear_regression_datafiles/"
                             "key_file_500MB.txt")],
-              variant="L"),
+              variant="large",
+              size=500),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_50MB.txt")],
-              variant="S"),
+              variant="small",
+              size=50),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_100MB.txt")],
-              variant="M"),
+              variant="medium",
+              size=100),
     Benchmark("string_match",
               [dataset_home("string_match_datafiles/key_file_500MB.txt")],
-              variant="L"),
+              variant="large",
+              size=500),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/small.bmp")],
-              variant="S"),
+              variant="small",
+              size=100),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/med.bmp")],
-              variant="M"),
+              variant="medium",
+              size=399),
     Benchmark("histogram",
               [dataset_home("histogram_datafiles/large.bmp")],
-              variant="L"),
+              variant="large",
+              size=1400),
 ]
 
 increasing_computation_benchmarks = [
@@ -487,14 +495,15 @@ class BenchmarkSet():
                         self.log[run_name] = {
                                 "threads": threads,
                                 "variant": bench.variant,
+                                "size": bench.size,
                                 "libs": {},
                                 "args": [],
                         }
 
+                    self.run_lib("inspector", run_name, bench, threads, True,  True)
                     self.run_lib("pthread",   run_name, bench, threads, False, False)
                     self.run_lib("tthread",   run_name, bench, threads, False, True)
                     self.run_lib("pt",        run_name, bench, threads, True,  False)
-                    self.run_lib("inspector", run_name, bench, threads, True,  True)
                 except OSError as e:
                     print("failed to run %s: %s" % (bench.name, e))
 
