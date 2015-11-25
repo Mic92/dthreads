@@ -1,177 +1,228 @@
 import sys
 import json
-import re
+from collections import defaultdict
+import pandas as pd
+import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from collections import defaultdict, OrderedDict
 
 
-def to_alphanum(key):
-    def convert(text):
-        return int(text) if text.isdigit() else text
-
-    def split(s):
-        return [convert(c) for c in re.split('([0-9]+)', key(s))]
-    return split
-
-
-def autolabel(rects):
-    # attach some text labels
-    for rect in rects:
-        height = rect.get_height()
-        plt.text(rect.get_x()+rect.get_width()/2.,
-                 height * 0.5,
-                 '%.2f' % height,
-                 ha='center',
-                 va='bottom',
-                 rotation="vertical")
-
-PATTERNS = (' ', '////', 'x', ' ', '*', 'o', 'O', '.')
-
-
-def mean(v):
-    v_ = list(map(float, v))
-    if len(v_) < 4:
-        return np.std(v_)
-    v_.remove(max(v_))
-    v_.remove(min(v_))
-    return np.mean(v_)
-
-
-def std(v):
-    v_ = list(map(float, v))
-    if len(v_) < 4:
-        return np.std(v_)
-    v_.remove(max(v_))
-    v_.remove(min(v_))
-    return np.std(v_)
-
+FIELDS = [
+    "times",
+    "log_sizes",
+    "user_time",
+    "alignment-faults",
+    'branch-instructions',
+    'bus-cycles',
+    'cache-misses',
+    'cache-references',
+    'cpu-cycles',
+    'instructions',
+    'ref-cycles',
+    'context-switches',
+    'cpu-clock',
+    'cpu-migrations',
+    'major-faults',
+    'minor-faults',
+    'page-faults',
+    'task-clock'
+]
 
 alias_map = {
         "pthread": "pthread",
-        "pt": "pt",
-        "tthread": "xy library",
+        "pt": "os support",
+        "tthread": "threading library",
         "inspector": "xy"
 }
 
-
-def generate_graph1(log):
-    def constructor():
-        return defaultdict(OrderedDict)
-    per_thread = defaultdict(constructor)
-    for bench, per_lib in sorted(json.load(open(log)).items()):
-        name, threads = bench.split("-", 1)
-        for lib, data in per_lib["libs"].items():
-            per_thread[int(threads)][lib][bench] = data
-
-    bar_width = 0.40
-    opacity = 0.4
-
-    plt.figure(figsize=(10, 8))
-
-    for thread, benchmarks in per_thread.items():
-        bench_names = benchmarks["pthread"].keys()
-        bench_names = map(lambda n: n.split("-", 1)[0], bench_names)
-        pthread_values = []
-        for v in benchmarks["pthread"].values():
-            pthread_values.append(mean(v["times"]))
-
-        i = 0
-        for lib, per_lib in benchmarks.items():
-
-            normalized_values = []
-            std_values = []
-            for v, w in zip(per_lib.values(), pthread_values):
-                normalized_values.append(mean(v["times"]) / w)
-                std_values.append(std(map(lambda v: float(v)/w, v["times"])))
-            index = np.arange(0, len(normalized_values) * 2, 2)
-            plt.bar(index + bar_width * (i + 0.5),
-                    normalized_values,
-                    bar_width,
-                    yerr=std_values,
-                    alpha=opacity,
-                    label=alias_map[lib],
-                    hatch=PATTERNS[i],
-                    color=cm.Greys(1.*i/len(benchmarks)),
-                    error_kw=dict(ecolor='black'))
-            # autolabel(rect)
-            i += 1
-            index += 0
-        plt.xlabel('Benchmarks')
-        plt.ylabel('Overhead')
-        plt.title("Times by benchmarks and libraries for %d threads" %
-                  thread,
-                  y=1.00)
-        plt.xticks(index + bar_width,
-                   [n for n in bench_names],
-                   rotation=50)
-        plt.legend(loc='best')
-        plt.grid()
-
-        plt.tight_layout()
-        plt.savefig("benchmarks-%d.pdf" % thread)
-        plt.clf()
+bench_alias_map = {
+        "linear_regression": "linear_reg",
+        "matrix_multiply": "matrix_mult",
+        "reverse_index": "reverve_idx",
+        "streamcluster": "streamclust."
+}
 
 
-def generate_graph2(log, aspect, title):
-    def constructor():
-        return defaultdict(OrderedDict)
-    per_lib = defaultdict(constructor)
-    json_data = json.load(open(log))
-    bench_names = set()
-    sort = sorted(json_data.items(),
-                  key=to_alphanum(lambda pair: pair[0]),
-                  reverse=False)
-    for bench, per_bench in sort:
-        name, threads = bench.split("-", 1)
-        bench_names.add(name)
-        for lib, data in per_bench["libs"].items():
-            per_lib[lib][int(threads)][bench] = data
+def to_float(v):
+    try:
+        if isinstance(v, str):
+            return float(v.replace(",", "."))
+        else:
+            return float(v)
+    except:
+        return 0
 
-    bar_width = 0.40
-    opacity = 0.4
 
-    pthread = per_lib["pthread"]
+def deserialize(json_file):
+    measurements = defaultdict(list)
+    json_data = json.load(json_file)
+    for benchmark, data in json_data.items():
+        name, _ = benchmark.split("-", 1)
+        for lib, lib_data in data["libs"].items():
+            field_count = 0
+            for field in FIELDS:
+                try:
+                    field_count = max(len(lib_data[field]), field_count)
+                    for v in lib_data[field]:
+                        measurements[field].append(to_float(v))
+                except KeyError:
+                    measurements[field].append(0)
+            for i in range(field_count):
+                measurements["name"].append(bench_alias_map.get(name, name))
+                measurements["library"].append(alias_map[lib])
+                for key in ["args", "threads", "variant", "size"]:
+                    try:
+                        if data[key] is None:
+                            measurements[key].append("")
+                        else:
+                            measurements[key].append(data[key])
+                    except KeyError:
+                        measurements[key].append("")
+    for k, v in measurements.items():
+        print("%s: %d" % (k, len(v)))
+    return pd.DataFrame(measurements)
 
-    for lib, per_thread in per_lib.items():
-        i = 0
-        for thread, data in sorted(per_thread.items()):
-            pthread_values = []
-            for v in pthread[thread].values():
-                pthread_values.append(mean(v[aspect]))
 
-            normalized_values = []
-            std_values = []
-            for v, w in zip(data.values(), pthread_values):
-                normalized_values.append(mean(v[aspect]) / w)
-                std_values.append(std(map(lambda v: float(v)/w, v[aspect])))
-            index = np.arange(0, len(normalized_values) * 2, 2)
-            plt.bar(index + bar_width * (i + 0.5),
-                    normalized_values,
-                    bar_width,
-                    yerr=std_values,
-                    alpha=opacity,
-                    label="%d threads" % thread,
-                    hatch=PATTERNS[i],
-                    color=cm.Greys(1.*i/len(per_lib)),
-                    error_kw=dict(ecolor='black'))
-            # autolabel(rect)
-            i += 1
-            index += 0
-        plt.xlabel('Benchmarks')
-        plt.ylabel('Overhead')
-        plt.title(title % alias_map[lib],
-                  y=1)
-        plt.xticks(index + bar_width * 2,
-                   sorted(bench_names),
-                   rotation=60)
-        plt.legend(loc='best')
-        plt.grid()
+def tmean(df):
+    return (df.sum() - df.min() - df.max()) / (df.count() - 2)
 
-        plt.savefig("benchmarks-%s-%s.pdf" % (aspect, lib))
-        plt.tight_layout()
-        plt.clf()
+
+def relative_to_pthread(df):
+    grouped = df.groupby(['library', 'name', 'threads', 'variant'])
+    tmean_values = tmean(grouped).reset_index()
+    wrt_native = None
+    for lib in df['library'].unique():
+        if lib == 'pthread':
+            continue
+        by_lib = tmean_values[tmean_values.library == lib]
+        native = tmean_values[tmean_values.library == 'pthread']
+        merged = by_lib.merge(native, on=['name', 'threads', 'variant'])
+        data = {}
+        for field in FIELDS:
+            data[field] = merged[field + "_x"] / merged[field + "_y"]
+        data['library'] = merged["library_x"]
+        data['size'] = merged["size_x"]
+        for field in ['name', "threads", 'variant']:
+            data[field] = merged[field]
+
+        if wrt_native is None:
+            wrt_native = pd.DataFrame(data)
+        else:
+            wrt_native = wrt_native.append(pd.DataFrame(data))
+    return wrt_native
+
+
+class Graph:
+    def __init__(self, df, format):
+        self.df = df
+        self.format = format
+
+    def save(self, graph, name):
+        file_name = ("%s.%s" % (name, self.format)).replace(" ", "_")
+        print(file_name)
+        graph.savefig(file_name)
+
+    def setup(self, graph, annotations, xticks):
+        for annotation in annotations:
+            graph.fig.text(annotation)
+        graph.set_xlabels("")
+        graph.despine(left=True)
+        if len(xticks) > 5:
+            graph.set_xticklabels(xticks, rotation=50)
+        else:
+            graph.set_xticklabels(xticks)
+
+    def by_variant(self, y, annotations=[], ylim=(0, 10)):
+        for lib in self.df['library'].unique():
+            if lib == 'pthread':
+                continue
+            filter = (self.df.library == lib) & \
+                     (self.df.threads == 16)
+            by_lib = self.df.copy()[filter]
+
+            f, ax1 = plt.subplots()
+            g = sns.barplot(x="name",
+                            y=y,
+                            hue="variant",
+                            data=by_lib,
+                            palette="Greys",
+                            hue_order=["small", "medium", "large"],
+                            ax=ax1)
+            g.set_ylabel("Overhead w.r.t native execution")
+            g.set_ylim(ylim)
+            g.set_xticklabels(by_lib.name.unique())
+            g.set_xlabel("")
+
+            sorted_ = by_lib.sort_values(['name', 'variant'], ascending=[1, 0])
+            ax2 = ax1.twinx()
+            ax2.set_ylim((0, 1500))
+            ax2.grid(False)
+            sizes = sorted_["size"]
+
+            for offset, name in enumerate(sorted_["name"].unique()):
+                index = (np.arange(3) - 1) / 3
+                ax2.plot(index + offset,
+                         sizes[offset * 3:(offset + 1) * 3],
+                         color="k",
+                         marker='o')
+                ax2.set_ylabel("Input size [MB]")
+
+            self.save(plt, "worksize-%s-%s" % (y, lib))
+
+    def by_library(self, y, annotations=[]):
+        for lib in self.df['library'].unique():
+            if lib == 'pthread':
+                continue
+            by_lib = self.df.copy()[self.df.library == lib]
+
+            g = sns.factorplot(x="name",
+                               y=y,
+                               hue="threads",
+                               data=by_lib,
+                               kind="bar",
+                               palette="Greys",
+                               legend_out=False,
+                               aspect=2)
+            g.set_ylabels("Overhead w.r.t native execution")
+            g.set(ylim=(0, 10))
+            self.setup(g, annotations, by_lib.name.unique())
+            self.save(g, "%s-%s" % (y, lib))
+
+    def by_threads(self, y, annotations=[]):
+        for thread in self.df['threads'].unique():
+            filter = (self.df.threads == thread) & \
+                    (self.df.library != 'pthread')
+            by_thread = self.df[filter]
+
+            g = sns.factorplot(x="name",
+                               y=y,
+                               hue="library",
+                               data=by_thread,
+                               kind="bar",
+                               palette="Greys",
+                               legend_out=False,
+                               aspect=2)
+            g.set_ylabels("Overhead w.r.t native")
+            g.set(ylim=(0, 10))
+            self.setup(g, annotations, by_thread.name.unique())
+            self.save(g, "%s-%d-threads" % (y, thread))
+
+
+def main(action, json_path):
+    df = deserialize(open(json_path))
+    wrt_native = relative_to_pthread(df)
+
+    sns.set_context("poster", font_scale=1.5)
+    sns.set(style="whitegrid")
+    g = Graph(wrt_native, "pdf")
+
+    if action == "worksize":
+        for f in ["times", "cpu-cycles"]:
+            g.by_variant(f, ylim=(0, 4))
+    else:
+        for f in FIELDS:
+            g.by_library(f)
+            g.by_threads(f)
 
 
 def die(msg):
@@ -179,16 +230,12 @@ def die(msg):
     sys.exit(1)
 
 
-def main():
-    if len(sys.argv) < 2:
-        die("USAGE: %s log.json" % sys.argv[0])
-    generate_graph1(sys.argv[1])
-    generate_graph2(sys.argv[1],
-                    "times",
-                    "Times by benchmarks and threads for %s")
-    generate_graph2(sys.argv[1],
-                    "cpu-cycles",
-                    "CPU cycles by benchmarks and threads for %s")
+def usage():
+    die("USAGE: %s threads|worksize JSON" % sys.argv[0])
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 3:
+        usage()
+    action = sys.argv[1]
+    json_path = sys.argv[2]
+    main(action, json_path)
