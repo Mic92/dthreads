@@ -24,14 +24,17 @@ def run(perf_command,
         process,
         cgroup,
         processor_trace=True,
+        trace_segfaults=True,
         remove_cgroup=True,
         snapshot_mode=False):
     command = [perf_command,
                "record",
                "--all-cpus",
                "--output", perf_log,
-               "--event", "major-faults",
-               "--cgroup", cgroup.name]
+               "--call-graph", "fp"]
+    if trace_segfaults:
+        command += ["--event", "signal:signal_generate",
+                    "--filter", "sig == 11"]
     if snapshot_mode:
         command.append("--snapshot")
     if processor_trace:

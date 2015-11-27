@@ -46,7 +46,9 @@ class DedupThreads(NCores):
 def set_online_cpus(threads=TOTAL_THREADS, verbose=True):
     for i in list(range(1, TOTAL_THREADS - 1)):
         enable = (i % int(TOTAL_THREADS / threads)) == 0
-        with open("/sys/devices/system/cpu/cpu%d/online" % i, "w") as f:
+        path = "/sys/devices/system/cpu/cpu%d/online" % i
+        with open(path, "w") as f:
+            print("echo %d > %s" % (enable, path))
             if enable:
                 f.write("1\n")
             else:
@@ -96,12 +98,6 @@ class Result:
         with open(percpu_path) as percpu:
             self.time_per_cpu = list(map(int, percpu.read().split()))
 
-    def read_memory_cgroup(self, memory):
-        stat_path = os.path.join(memory.mountpoint, "memory.stat")
-        stats = self._read_file_to_dict(stat_path)
-        self.pgfault = stats["pgfault"]
-        self.pgmajfault = stats["pgmajfault"]
-
     def calculate_compressed_logsize(self, log_path):
         lz4 = subprocess.Popen(('lz4c', '--stdout', log_path),
                                stdout=subprocess.PIPE)
@@ -127,6 +123,7 @@ EVENTS = [
          "task-clock"
 ]
 
+SIGNAL_EVENT = "signal:signal_generate"
 
 class PerfStat():
     def __init__(self, cgroup_name, perf_command="perf"):
@@ -135,6 +132,10 @@ class PerfStat():
                     "--field-separator", "\t",
                     "--all-cpus",
                     "--event", ",".join(EVENTS),
+                    # SIGUSR1
+                    "--event", SIGNAL_EVENT, "--filter", "sig == 10",
+                    # SIGSEGV
+                    "--event", SIGNAL_EVENT, "--filter", "sig == 11",
                     "--cgroup", cgroup_name]
         print(" ".join(self.cmd))
 
@@ -150,13 +151,22 @@ class PerfStat():
             print("perf is already stopped: %s" % e)
         stdout, stderr = self.process.communicate()
         stats = {}
+
+        first_signal = True
         for l in stderr.decode("utf-8").split("\n"):
             columns = l.split("\t")
             if len(columns) < 3:
                 continue
             value = columns[0]
             name = columns[2]
-            stats[name] = value
+            if name == SIGNAL_EVENT:
+                if first_signal:
+                    stats["sigusr1"] = value
+                else:
+                    stats["sigsegv"] = value
+                first_signal = False
+            else:
+                stats[name] = value
         if len(stats) == 0:
             raise OSError("could not obtain statistics from perf: %s" %
                           stderr.decode("utf-8"))
@@ -202,8 +212,7 @@ class Benchmark():
         cgroup_name = "inspector-%d" % os.getpid()
 
         with cgroups.cpuacct(cgroup_name) as cpuacct, \
-                cgroups.perf_event(cgroup_name) as perf_event, \
-                cgroups.memory(cgroup_name) as memory:
+                cgroups.perf_event(cgroup_name) as perf_event:
             perf = PerfStat(perf_event.name, perf_command=self.perf_command)
             perf.run()
             proc = inspector.run(cmd,
@@ -224,7 +233,6 @@ class Benchmark():
                        log_size=os.path.getsize(perf_log),
                        perf_stats=perf_stats)
             r.read_cpuacct_cgroup(cpuacct)
-            r.read_memory_cgroup(memory)
             r.calculate_compressed_logsize(perf_log)
         return r
 
@@ -458,6 +466,8 @@ class BenchmarkSet():
                     "system_time": [],
                     "user_time": [],
                     "time_per_cpu": [],
+                    "sigsegv": [],
+                    "sigusr1": [],
                     "args": None
             }
             for event in EVENTS:
@@ -479,6 +489,8 @@ class BenchmarkSet():
             lib["time_per_cpu"].append(result.time_per_cpu)
             for event in EVENTS:
                 lib[event].append(result.perf_stats[event])
+            lib["sigusr1"].append(result.perf_stats["sigusr1"])
+            lib["sigsegv"].append(result.perf_stats["sigsegv"])
             self.log[run_name]["args"] = result.args
             with open(self.log_path, "w") as f:
                 json.dump(self.log,
