@@ -1,1 +1,2413 @@
-Hello, Foobar
+<html>
+<head>
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-7s5uDGW3AHqw6xtJmNNtr+OBRJUlgkNJEo78P4b0yRw= sha512-nNo+yCHEyn0smMxSswnf/OnX6/KwJuZTlNZBjauKhTK0c+zT+q5JOCx0UFhXQ6rJR9jg6Es8gPuD2uZcYDLqSw==" crossorigin="anonymous">
+
+<style>
+body { padding-top: 70px; }
+.resize {
+    height: 700px;
+    width: auto;
+}
+</style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header"> <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-6" aria-expanded="false"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button> <a class="navbar-brand" href="#">Additional Results</a></div>
+
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li role="presentation"><a class="active" href="#graph1">Execution time for varying threads</a></li>
+        <li role="presentation"><a href="#graph2">CPU cycles for varying threads</a></li>
+        <li role="presentation"><a href="#graph3">Execution time for 16 threads</a></li>
+        <li role="presentation"><a href="#graph4">CPU cycles for 16 threads</a></li>
+        <li role="presentation"><a href="#graph5">Time for varying Worksize</a></li>
+        <li role="presentation"><a href="#graph6">CPU cycles for varying Worksize</a></li>
+        <li role="presentation"><a href="#measurement_table">All Values</a></li>
+        <li role="presentation"><a href="#raw_data">Raw data</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<h2 id="graph1">Execution time for 16 threads</h2>
+<img class="resize" src="https://www.dropbox.com/s/0bo981kcz6z9li2/times-Total_overheads.png?raw=1"/>
+
+<h2 id="graph2">CPU cycles for varying threads</h2>
+<img class="resize" src="https://www.dropbox.com/s/5r6x3z2239gv2dr/cpu-cycles-Total_overheads.png?raw=1"/>
+
+<h2 id="graph3">Execution time for 16 threads</h2>
+<img class="resize" src="https://www.dropbox.com/s/yj8yznwhj9np7ty/times-16-threads.png?raw=1"/>
+
+<h2 id="graph4">CPU cycles for 16 threads</h2>
+<img class="resize" src="https://www.dropbox.com/s/xjt96czc1rmd54v/cpu-cycles-16-threads.png?raw=1"/>
+
+<h2 id="graph5">Time for varying Worksize</h2>
+<img class="resize" src="https://www.dropbox.com/s/xnoqyfcreu1j4m2/worksize-times-Total_overheads.png?raw=1"/>
+
+<h2 id="graph6">CPU cycles for varying Worksize</h2>
+<img class="resize" src="https://www.dropbox.com/s/8my8r09ngvv9elz/worksize-cpu-cycles-Total_overheads.png?raw=1"/>
+
+<h2 id="measurement_table">All values</h2>
+<table class="table table-striped table-bordered">
+
+<tr>
+
+    <th>
+      Name
+    </th>
+
+    <th>
+      Options
+    </th>
+
+    <th>
+      Library
+    </th>
+
+    <th>
+      Logsize [MB]
+    </th>
+
+    <th>
+      Compressed Log (Ratio) [MB]
+    </th>
+
+    <th>
+      Log bandwith [MB/s]
+    </th>
+
+    <th>
+      Segfault/time [1/s]
+    </th>
+
+    <th>
+      Branch instructions/time [1/s]
+    </th>
+
+    <th>
+      Wall time [s]
+    </th>
+
+    <th>
+      System time [s]
+    </th>
+
+    <th>
+      User time [s]
+    </th>
+
+    <th>
+      CPU time [s]
+    </th>
+
+    <th>
+      Derivation time of all CPUs [s]
+    </th>
+
+    <th>
+      Sigsegv
+    </th>
+
+    <th>
+      Sigusr1
+    </th>
+
+    <th>
+      Branch instructions
+    </th>
+
+    <th>
+      Bus cycles
+    </th>
+
+    <th>
+      Cache misses
+    </th>
+
+    <th>
+      Cache references
+    </th>
+
+    <th>
+      Cpu cycles
+    </th>
+
+    <th>
+      Instructions
+    </th>
+
+    <th>
+      Ref cycles
+    </th>
+
+    <th>
+      Alignment faults
+    </th>
+
+    <th>
+      Context switches
+    </th>
+
+    <th>
+      Cpu clock
+    </th>
+
+    <th>
+      Cpu migrations
+    </th>
+
+    <th>
+      Major faults
+    </th>
+
+    <th>
+      Minor faults
+    </th>
+
+    <th>
+      Page faults
+    </th>
+
+    <th>
+      Task clock
+    </th>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            blackscholes
+
+      </td>
+
+      <td>
+
+            16&nbsp;in_64K.txt&nbsp;prices.txt
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.133<br>0.489<br>653<br>851
+
+      </td>
+
+      <td>
+
+            0.025 (5.2x)<br>0.045 (10.9x)<br>54.4 (12.0x)<br>57.3 (14.9x)
+
+      </td>
+
+      <td>
+
+            0.355<br>1.17<br>778<br>882
+
+      </td>
+
+      <td>
+
+            0.000<br>3925<br>0.000<br>1704
+
+      </td>
+
+      <td>
+
+            1.61E+09<br>1.98E+09<br>7.25E+08<br>2.49E+09
+
+      </td>
+
+      <td>
+
+            0.374<br>0.419<br>0.840<br>0.965
+
+      </td>
+
+      <td>
+
+            0.003<br>0.048<br>0.007<br>0.075
+
+      </td>
+
+      <td>
+
+            2.25<br>2.80<br>5.00<br>7.53
+
+      </td>
+
+      <td>
+
+            2.23<br>2.87<br>5.01<br>7.59
+
+      </td>
+
+      <td>
+
+            0.044<br>0.065<br>0.122<br>0.144
+
+      </td>
+
+      <td>
+
+            0<br>1644<br>0<br>1644
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            6.02E+08<br>8.31E+08<br>6.09E+08<br>2.40E+09
+
+      </td>
+
+      <td>
+
+            2.22E+08<br>2.74E+08<br>5.02E+08<br>7.99E+08
+
+      </td>
+
+      <td>
+
+            4.59E+06<br>5.95E+06<br>3.42E+07<br>4.14E+07
+
+      </td>
+
+      <td>
+
+            4.56E+06<br>6.51E+06<br>3.57E+07<br>4.11E+07
+
+      </td>
+
+      <td>
+
+            2.96E+09<br>3.96E+09<br>8.34E+09<br>1.47E+10
+
+      </td>
+
+      <td>
+
+            4.71E+09<br>6.38E+09<br>5.62E+09<br>1.27E+10
+
+      </td>
+
+      <td>
+
+            4.35E+09<br>6.14E+09<br>1.16E+10<br>1.63E+10
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            447<br>522<br>657<br>675
+
+      </td>
+
+      <td>
+
+            1.42E+04<br>1.64E+04<br>2.21E+04<br>2.54E+04
+
+      </td>
+
+      <td>
+
+            30<br>31<br>43<br>55
+
+      </td>
+
+      <td>
+
+            0<br>15<br>0<br>15
+
+      </td>
+
+      <td>
+
+            1757<br>6345<br>1.86E+04<br>2.32E+04
+
+      </td>
+
+      <td>
+
+            1744<br>7997<br>1.86E+04<br>2.49E+04
+
+      </td>
+
+      <td>
+
+            1.42E+04<br>1.64E+04<br>2.20E+04<br>2.54E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            canneal
+
+      </td>
+
+      <td>
+
+            15&nbsp;10000&nbsp;2000&nbsp;100000.nets&nbsp;32
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.133<br>198<br>612<br>5343
+
+      </td>
+
+      <td>
+
+            0.025 (5.2x)<br>9.26 (21.4x)<br>104 (5.9x)<br>315 (17.0x)
+
+      </td>
+
+      <td>
+
+            0.152<br>32.1<br>198<br>547
+
+      </td>
+
+      <td>
+
+            0.000<br>1.54E+05<br>0.000<br>9.69E+04
+
+      </td>
+
+      <td>
+
+            5.66E+08<br>3.52E+09<br>1.20E+08<br>1.55E+09
+
+      </td>
+
+      <td>
+
+            0.872<br>6.16<br>3.09<br>9.78
+
+      </td>
+
+      <td>
+
+            0.040<br>23.9<br>0.120<br>29.0
+
+      </td>
+
+      <td>
+
+            1.24<br>22.6<br>3.53<br>31.7
+
+      </td>
+
+      <td>
+
+            1.34<br>46.8<br>3.61<br>60.9
+
+      </td>
+
+      <td>
+
+            0.174<br>0.479<br>0.725<br>0.907
+
+      </td>
+
+      <td>
+
+            0<br>9.48E+05<br>0<br>9.48E+05
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            4.94E+08<br>2.17E+10<br>3.72E+08<br>1.51E+10
+
+      </td>
+
+      <td>
+
+            1.59E+08<br>4.21E+09<br>3.64E+08<br>5.66E+09
+
+      </td>
+
+      <td>
+
+            3.00E+07<br>8.57E+08<br>5.57E+07<br>1.19E+09
+
+      </td>
+
+      <td>
+
+            2.81E+07<br>8.43E+08<br>5.66E+07<br>1.21E+09
+
+      </td>
+
+      <td>
+
+            2.21E+09<br>9.27E+10<br>7.37E+09<br>1.41E+11
+
+      </td>
+
+      <td>
+
+            1.63E+09<br>7.10E+10<br>2.12E+09<br>6.42E+10
+
+      </td>
+
+      <td>
+
+            3.28E+09<br>9.20E+10<br>8.38E+09<br>1.30E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1386<br>3.00E+05<br>2387<br>2.25E+05
+
+      </td>
+
+      <td>
+
+            2.22E+04<br>1.15E+05<br>5.81E+04<br>1.75E+05
+
+      </td>
+
+      <td>
+
+            40<br>787<br>50<br>793
+
+      </td>
+
+      <td>
+
+            0<br>23<br>0<br>23
+
+      </td>
+
+      <td>
+
+            9050<br>1.11E+06<br>1.92E+04<br>1.16E+06
+
+      </td>
+
+      <td>
+
+            9049<br>2.06E+06<br>1.92E+04<br>2.11E+06
+
+      </td>
+
+      <td>
+
+            2.22E+04<br>1.15E+05<br>5.81E+04<br>1.75E+05
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            histogram
+
+      </td>
+
+      <td>
+
+            large.bmp
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.132<br>0.156<br>109<br>381
+
+      </td>
+
+      <td>
+
+            0.025 (5.2x)<br>0.028 (5.7x)<br>3.90 (27.9x)<br>11.3 (33.6x)
+
+      </td>
+
+      <td>
+
+            0.540<br>0.572<br>400<br>961
+
+      </td>
+
+      <td>
+
+            0.000<br>373<br>0.000<br>258
+
+      </td>
+
+      <td>
+
+            2.13E+09<br>4.81E+09<br>1.86E+09<br>4.17E+09
+
+      </td>
+
+      <td>
+
+            0.245<br>0.273<br>0.273<br>0.396
+
+      </td>
+
+      <td>
+
+            0.145<br>0.180<br>0.147<br>0.177
+
+      </td>
+
+      <td>
+
+            3.17<br>3.50<br>3.21<br>4.91
+
+      </td>
+
+      <td>
+
+            3.26<br>3.64<br>3.33<br>5.07
+
+      </td>
+
+      <td>
+
+            0.013<br>0.021<br>0.020<br>0.060
+
+      </td>
+
+      <td>
+
+            0<br>102<br>0<br>102
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            5.23E+08<br>1.32E+09<br>5.08E+08<br>1.65E+09
+
+      </td>
+
+      <td>
+
+            2.81E+08<br>3.69E+08<br>3.42E+08<br>5.29E+08
+
+      </td>
+
+      <td>
+
+            2.27E+07<br>2.58E+07<br>3.08E+07<br>4.57E+07
+
+      </td>
+
+      <td>
+
+            2.18E+07<br>2.53E+07<br>3.04E+07<br>4.36E+07
+
+      </td>
+
+      <td>
+
+            3.98E+09<br>6.03E+09<br>4.70E+09<br>9.57E+09
+
+      </td>
+
+      <td>
+
+            4.40E+09<br>7.76E+09<br>4.72E+09<br>8.78E+09
+
+      </td>
+
+      <td>
+
+            5.86E+09<br>8.08E+09<br>6.39E+09<br>1.26E+10
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            381<br>427<br>543<br>507
+
+      </td>
+
+      <td>
+
+            1.21E+04<br>1.39E+04<br>1.29E+04<br>1.62E+04
+
+      </td>
+
+      <td>
+
+            25<br>34<br>32<br>58
+
+      </td>
+
+      <td>
+
+            0<br>4<br>0<br>4
+
+      </td>
+
+      <td>
+
+            2.21E+04<br>2.57E+04<br>3.87E+04<br>4.26E+04
+
+      </td>
+
+      <td>
+
+            2.21E+04<br>2.58E+04<br>3.87E+04<br>4.27E+04
+
+      </td>
+
+      <td>
+
+            1.20E+04<br>1.39E+04<br>1.29E+04<br>1.62E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            kmeans
+
+      </td>
+
+      <td>
+
+            -d&nbsp;3&nbsp;-c&nbsp;500&nbsp;-p&nbsp;50000&nbsp;-s&nbsp;500
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.398<br>116<br>2869<br>1.19E+04
+
+      </td>
+
+      <td>
+
+            0.119 (3.3x)<br>4.67 (24.9x)<br>252 (11.4x)<br>522 (22.8x)
+
+      </td>
+
+      <td>
+
+            0.344<br>20.2<br>1136<br>1438
+
+      </td>
+
+      <td>
+
+            0.000<br>8.37E+04<br>0.000<br>5.81E+04
+
+      </td>
+
+      <td>
+
+            1.20E+10<br>1.12E+10<br>5.40E+09<br>5.79E+09
+
+      </td>
+
+      <td>
+
+            1.16<br>5.76<br>2.53<br>8.29
+
+      </td>
+
+      <td>
+
+            0.098<br>9.52<br>0.133<br>9.39
+
+      </td>
+
+      <td>
+
+            10.9<br>49.1<br>21.4<br>78.3
+
+      </td>
+
+      <td>
+
+            8.77<br>56.9<br>18.7<br>87.1
+
+      </td>
+
+      <td>
+
+            0.057<br>0.541<br>0.068<br>0.548
+
+      </td>
+
+      <td>
+
+            0<br>4.82E+05<br>0<br>4.82E+05
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1.38E+10<br>6.46E+10<br>1.36E+10<br>4.80E+10
+
+      </td>
+
+      <td>
+
+            9.73E+08<br>5.30E+09<br>2.14E+09<br>9.02E+09
+
+      </td>
+
+      <td>
+
+            6.49E+07<br>4.84E+08<br>2.00E+08<br>1.08E+09
+
+      </td>
+
+      <td>
+
+            6.19E+07<br>4.54E+08<br>2.04E+08<br>1.04E+09
+
+      </td>
+
+      <td>
+
+            2.05E+10<br>1.20E+11<br>4.86E+10<br>2.18E+11
+
+      </td>
+
+      <td>
+
+            4.38E+10<br>1.88E+11<br>4.67E+10<br>1.56E+11
+
+      </td>
+
+      <td>
+
+            2.13E+10<br>1.14E+11<br>4.52E+10<br>1.90E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            5550<br>1.09E+05<br>6785<br>8.13E+04
+
+      </td>
+
+      <td>
+
+            2.67E+04<br>1.05E+05<br>4.92E+04<br>1.48E+05
+
+      </td>
+
+      <td>
+
+            1711<br>8343<br>2095<br>8308
+
+      </td>
+
+      <td>
+
+            0<br>5<br>0<br>5
+
+      </td>
+
+      <td>
+
+            4056<br>6.09E+05<br>2.39E+04<br>6.74E+05
+
+      </td>
+
+      <td>
+
+            4029<br>1.09E+06<br>2.39E+04<br>1.16E+06
+
+      </td>
+
+      <td>
+
+            2.67E+04<br>1.05E+05<br>4.92E+04<br>1.48E+05
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            linear_regression
+
+      </td>
+
+      <td>
+
+            key_file_500MB.txt
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.133<br>0.145<br>63.3<br>183
+
+      </td>
+
+      <td>
+
+            0.025 (5.2x)<br>0.027 (5.3x)<br>2.35 (27.0x)<br>5.46 (33.5x)
+
+      </td>
+
+      <td>
+
+            0.113<br>0.687<br>52.1<br>707
+
+      </td>
+
+      <td>
+
+            0.000<br>246<br>0.000<br>201
+
+      </td>
+
+      <td>
+
+            2.46E+08<br>3.46E+09<br>2.49E+08<br>3.81E+09
+
+      </td>
+
+      <td>
+
+            1.17<br>0.211<br>1.21<br>0.259
+
+      </td>
+
+      <td>
+
+            0.030<br>0.107<br>0.035<br>0.128
+
+      </td>
+
+      <td>
+
+            13.9<br>2.67<br>14.4<br>3.24
+
+      </td>
+
+      <td>
+
+            13.9<br>2.77<br>14.4<br>3.34
+
+      </td>
+
+      <td>
+
+            0.246<br>0.017<br>0.265<br>0.034
+
+      </td>
+
+      <td>
+
+            0<br>52<br>0<br>52
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            2.88E+08<br>7.30E+08<br>3.02E+08<br>9.88E+08
+
+      </td>
+
+      <td>
+
+            1.27E+09<br>2.84E+08<br>1.31E+09<br>3.87E+08
+
+      </td>
+
+      <td>
+
+            2.55E+08<br>1.17E+07<br>2.62E+08<br>2.32E+07
+
+      </td>
+
+      <td>
+
+            2.44E+08<br>1.12E+07<br>2.60E+08<br>2.33E+07
+
+      </td>
+
+      <td>
+
+            2.49E+10<br>4.55E+09<br>2.73E+10<br>6.34E+09
+
+      </td>
+
+      <td>
+
+            5.78E+09<br>8.27E+09<br>6.28E+09<br>8.19E+09
+
+      </td>
+
+      <td>
+
+            2.60E+10<br>6.17E+09<br>2.85E+10<br>7.05E+09
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            662<br>522<br>696<br>552
+
+      </td>
+
+      <td>
+
+            2.69E+04<br>1.30E+04<br>2.80E+04<br>1.42E+04
+
+      </td>
+
+      <td>
+
+            47<br>43<br>43<br>40
+
+      </td>
+
+      <td>
+
+            0<br>4<br>0<br>4
+
+      </td>
+
+      <td>
+
+            8965<br>1.23E+04<br>2.39E+04<br>2.88E+04
+
+      </td>
+
+      <td>
+
+            8952<br>1.24E+04<br>2.39E+04<br>2.88E+04
+
+      </td>
+
+      <td>
+
+            2.69E+04<br>1.30E+04<br>2.80E+04<br>1.42E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            matrix_multiply
+
+      </td>
+
+      <td>
+
+            2000&nbsp;2000
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.134<br>1.09<br>1133<br>2101
+
+      </td>
+
+      <td>
+
+            0.026 (5.2x)<br>0.064 (16.9x)<br>74.4 (15.2x)<br>97.0 (21.7x)
+
+      </td>
+
+      <td>
+
+            0.013<br>0.092<br>60.8<br>105
+
+      </td>
+
+      <td>
+
+            0.000<br>337<br>0.000<br>200
+
+      </td>
+
+      <td>
+
+            4.72E+08<br>1.09E+09<br>2.67E+08<br>4.05E+08
+
+      </td>
+
+      <td>
+
+            10.6<br>11.8<br>18.6<br>19.9
+
+      </td>
+
+      <td>
+
+            4.92<br>5.12<br>9.03<br>9.34
+
+      </td>
+
+      <td>
+
+            82.5<br>103<br>92.5<br>111
+
+      </td>
+
+      <td>
+
+            87.3<br>108<br>102<br>121
+
+      </td>
+
+      <td>
+
+            1.33<br>1.34<br>3.20<br>3.30
+
+      </td>
+
+      <td>
+
+            0<br>3977<br>0<br>3977
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            5.02E+09<br>1.29E+10<br>4.97E+09<br>8.07E+09
+
+      </td>
+
+      <td>
+
+            7.95E+09<br>9.82E+09<br>9.30E+09<br>1.10E+10
+
+      </td>
+
+      <td>
+
+            2.18E+09<br>4.52E+09<br>4.03E+09<br>5.92E+09
+
+      </td>
+
+      <td>
+
+            2.06E+09<br>4.56E+09<br>3.85E+09<br>5.70E+09
+
+      </td>
+
+      <td>
+
+            1.81E+11<br>2.26E+11<br>2.14E+11<br>2.60E+11
+
+      </td>
+
+      <td>
+
+            3.74E+10<br>5.81E+10<br>4.02E+10<br>5.30E+10
+
+      </td>
+
+      <td>
+
+            1.66E+11<br>2.09E+11<br>2.03E+11<br>2.46E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1750<br>1496<br>3098<br>3408
+
+      </td>
+
+      <td>
+
+            1.78E+05<br>1.98E+05<br>3.07E+05<br>3.29E+05
+
+      </td>
+
+      <td>
+
+            82<br>69<br>179<br>256
+
+      </td>
+
+      <td>
+
+            0<br>20<br>0<br>20
+
+      </td>
+
+      <td>
+
+            5.85E+04<br>2.07E+05<br>8.22E+04<br>2.28E+05
+
+      </td>
+
+      <td>
+
+            5.85E+04<br>2.11E+05<br>8.22E+04<br>2.32E+05
+
+      </td>
+
+      <td>
+
+            1.78E+05<br>1.98E+05<br>3.07E+05<br>3.29E+05
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            pca
+
+      </td>
+
+      <td>
+
+            -r&nbsp;4000&nbsp;-c&nbsp;4000&nbsp;-s&nbsp;100
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.135<br>57.2<br>1174<br>1900
+
+      </td>
+
+      <td>
+
+            0.026 (5.1x)<br>1.87 (30.5x)<br>85.6 (13.7x)<br>116 (16.4x)
+
+      </td>
+
+      <td>
+
+            0.046<br>15.2<br>284<br>364
+
+      </td>
+
+      <td>
+
+            0.000<br>6.40E+04<br>0.000<br>4.63E+04
+
+      </td>
+
+      <td>
+
+            1.49E+09<br>2.26E+09<br>1.06E+09<br>1.42E+09
+
+      </td>
+
+      <td>
+
+            2.95<br>3.77<br>4.13<br>5.22
+
+      </td>
+
+      <td>
+
+            0.228<br>4.26<br>0.268<br>4.51
+
+      </td>
+
+      <td>
+
+            40.6<br>42.8<br>43.2<br>47.8
+
+      </td>
+
+      <td>
+
+            40.8<br>47.2<br>43.5<br>52.4
+
+      </td>
+
+      <td>
+
+            0.073<br>0.159<br>0.370<br>0.470
+
+      </td>
+
+      <td>
+
+            0<br>2.41E+05<br>0<br>2.41E+05
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            4.39E+09<br>8.53E+09<br>4.37E+09<br>7.41E+09
+
+      </td>
+
+      <td>
+
+            3.87E+09<br>4.39E+09<br>4.07E+09<br>5.05E+09
+
+      </td>
+
+      <td>
+
+            2.66E+09<br>2.71E+09<br>2.48E+09<br>2.66E+09
+
+      </td>
+
+      <td>
+
+            2.60E+09<br>2.71E+09<br>2.50E+09<br>2.70E+09
+
+      </td>
+
+      <td>
+
+            8.38E+10<br>9.45E+10<br>8.94E+10<br>1.14E+11
+
+      </td>
+
+      <td>
+
+            4.01E+10<br>5.37E+10<br>4.06E+10<br>5.41E+10
+
+      </td>
+
+      <td>
+
+            7.95E+10<br>9.23E+10<br>8.81E+10<br>1.09E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            734<br>2.02E+04<br>1545<br>8360
+
+      </td>
+
+      <td>
+
+            5.53E+04<br>7.14E+04<br>7.47E+04<br>9.48E+04
+
+      </td>
+
+      <td>
+
+            64<br>380<br>122<br>545
+
+      </td>
+
+      <td>
+
+            0<br>43<br>0<br>42
+
+      </td>
+
+      <td>
+
+            6.32E+04<br>2.66E+05<br>8.46E+04<br>2.93E+05
+
+      </td>
+
+      <td>
+
+            6.32E+04<br>5.08E+05<br>8.46E+04<br>5.34E+05
+
+      </td>
+
+      <td>
+
+            5.53E+04<br>7.14E+04<br>7.47E+04<br>9.48E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            reverse_index
+
+      </td>
+
+      <td>
+
+            datafiles
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.134<br>0.362<br>0.676<br>192
+
+      </td>
+
+      <td>
+
+            0.026 (5.1x)<br>0.042 (8.7x)<br>0.166 (4.1x)<br>5.70 (33.7x)
+
+      </td>
+
+      <td>
+
+            14.1<br>2.10<br>50.9<br>764
+
+      </td>
+
+      <td>
+
+            0.000<br>6186<br>0.000<br>4241
+
+      </td>
+
+      <td>
+
+            1.20E+08<br>5.66E+09<br>1.72E+08<br>2.87E+09
+
+      </td>
+
+      <td>
+
+            0.009<br>0.173<br>0.013<br>0.252
+
+      </td>
+
+      <td>
+
+            0.003<br>0.077<br>0.007<br>0.070
+
+      </td>
+
+      <td>
+
+            0.000<br>1.16<br>0.000<br>1.86
+
+      </td>
+
+      <td>
+
+            0.011<br>1.20<br>0.016<br>1.92
+
+      </td>
+
+      <td>
+
+            0.001<br>0.027<br>0.002<br>0.034
+
+      </td>
+
+      <td>
+
+            0<br>1068<br>0<br>1068
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1.14E+06<br>9.77E+08<br>2.29E+06<br>7.22E+08
+
+      </td>
+
+      <td>
+
+            3.27E+07<br>1.41E+08<br>3.02E+07<br>2.43E+08
+
+      </td>
+
+      <td>
+
+            7.23E+06<br>1.07E+07<br>3.81E+06<br>3.09E+07
+
+      </td>
+
+      <td>
+
+            7.07E+06<br>1.01E+07<br>3.48E+06<br>2.85E+07
+
+      </td>
+
+      <td>
+
+            2.67E+08<br>2.06E+09<br>2.73E+08<br>3.91E+09
+
+      </td>
+
+      <td>
+
+            1.84E+08<br>3.44E+09<br>2.00E+08<br>2.93E+09
+
+      </td>
+
+      <td>
+
+            5.64E+08<br>3.39E+09<br>4.72E+08<br>5.66E+09
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            4504<br>703<br>414<br>7552
+
+      </td>
+
+      <td>
+
+            8410<br>1.29E+04<br>9061<br>1.43E+04
+
+      </td>
+
+      <td>
+
+            41<br>64<br>39<br>79
+
+      </td>
+
+      <td>
+
+            0<br>22<br>0<br>22
+
+      </td>
+
+      <td>
+
+            812<br>8048<br>1138<br>2.50E+04
+
+      </td>
+
+      <td>
+
+            811<br>8503<br>1136<br>2.61E+04
+
+      </td>
+
+      <td>
+
+            8410<br>1.29E+04<br>9059<br>1.43E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            streamcluster
+
+      </td>
+
+      <td>
+
+            2&nbsp;5&nbsp;1&nbsp;10&nbsp;10&nbsp;5&nbsp;none&nbsp;output.txt&nbsp;16
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.127<br>3.39<br>24.0<br>2.93E+04
+
+      </td>
+
+      <td>
+
+            0.024 (5.3x)<br>0.215 (15.8x)<br>5.03 (4.8x)<br>787 (37.3x)
+
+      </td>
+
+      <td>
+
+            0.308<br>6.87<br>41.0<br>2083
+
+      </td>
+
+      <td>
+
+            0.000<br>3.18E+04<br>0.000<br>1115
+
+      </td>
+
+      <td>
+
+            7.39E+07<br>5.85E+09<br>2.19E+08<br>7.78E+09
+
+      </td>
+
+      <td>
+
+            0.411<br>0.493<br>0.585<br>14.1
+
+      </td>
+
+      <td>
+
+            0.698<br>1.30<br>1.14<br>0.782
+
+      </td>
+
+      <td>
+
+            0.010<br>3.93<br>0.058<br>190
+
+      </td>
+
+      <td>
+
+            0.885<br>5.40<br>1.49<br>191
+
+      </td>
+
+      <td>
+
+            0.006<br>0.037<br>0.007<br>0.680
+
+      </td>
+
+      <td>
+
+            0<br>1.57E+04<br>0<br>1.57E+04
+
+      </td>
+
+      <td>
+
+            0<br>13<br>0<br>10
+
+      </td>
+
+      <td>
+
+            3.04E+07<br>2.89E+09<br>1.28E+08<br>1.10E+11
+
+      </td>
+
+      <td>
+
+            5.63E+07<br>4.64E+08<br>1.50E+08<br>1.99E+10
+
+      </td>
+
+      <td>
+
+            1.04E+07<br>2.93E+07<br>2.95E+07<br>1.31E+09
+
+      </td>
+
+      <td>
+
+            1.04E+07<br>2.92E+07<br>2.94E+07<br>1.31E+09
+
+      </td>
+
+      <td>
+
+            7.41E+08<br>5.97E+09<br>1.99E+09<br>4.60E+11
+
+      </td>
+
+      <td>
+
+            5.02E+08<br>7.93E+09<br>1.31E+09<br>3.21E+11
+
+      </td>
+
+      <td>
+
+            1.22E+09<br>9.82E+09<br>2.99E+09<br>3.99E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            7.59E+04<br>9.50E+04<br>6.43E+04<br>8.62E+04
+
+      </td>
+
+      <td>
+
+            1.48E+04<br>1.75E+04<br>1.80E+04<br>2.38E+05
+
+      </td>
+
+      <td>
+
+            177<br>86<br>1125<br>1886
+
+      </td>
+
+      <td>
+
+            0<br>6<br>0<br>6
+
+      </td>
+
+      <td>
+
+            705<br>2.22E+04<br>7028<br>1.48E+05
+
+      </td>
+
+      <td>
+
+            703<br>3.79E+04<br>7027<br>1.64E+05
+
+      </td>
+
+      <td>
+
+            1.48E+04<br>1.75E+04<br>1.80E+04<br>2.38E+05
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            string_match
+
+      </td>
+
+      <td>
+
+            key_file_500MB.txt
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.133<br>0.145<br>2053<br>2751
+
+      </td>
+
+      <td>
+
+            0.025 (5.2x)<br>0.027 (5.3x)<br>399 (5.1x)<br>430 (6.4x)
+
+      </td>
+
+      <td>
+
+            0.195<br>0.203<br>1517<br>1763
+
+      </td>
+
+      <td>
+
+            0.000<br>74.1<br>0.000<br>34.0
+
+      </td>
+
+      <td>
+
+            7.93E+09<br>9.80E+09<br>4.01E+09<br>5.61E+09
+
+      </td>
+
+      <td>
+
+            0.682<br>0.715<br>1.35<br>1.56
+
+      </td>
+
+      <td>
+
+            0.045<br>0.075<br>0.058<br>0.098
+
+      </td>
+
+      <td>
+
+            10.5<br>10.8<br>17.8<br>22.6
+
+      </td>
+
+      <td>
+
+            10.4<br>10.9<br>17.8<br>22.7
+
+      </td>
+
+      <td>
+
+            0.027<br>0.021<br>0.205<br>0.240
+
+      </td>
+
+      <td>
+
+            0<br>53<br>0<br>53
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            5.41E+09<br>7.01E+09<br>5.43E+09<br>8.75E+09
+
+      </td>
+
+      <td>
+
+            9.75E+08<br>1.03E+09<br>1.78E+09<br>2.32E+09
+
+      </td>
+
+      <td>
+
+            1.13E+07<br>1.28E+07<br>1.08E+08<br>1.34E+08
+
+      </td>
+
+      <td>
+
+            1.11E+07<br>1.22E+07<br>1.17E+08<br>1.33E+08
+
+      </td>
+
+      <td>
+
+            1.81E+10<br>2.03E+10<br>3.78E+10<br>5.26E+10
+
+      </td>
+
+      <td>
+
+            3.03E+10<br>3.44E+10<br>3.20E+10<br>4.36E+10
+
+      </td>
+
+      <td>
+
+            2.02E+10<br>2.10E+10<br>3.72E+10<br>4.84E+10
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            454<br>458<br>919<br>784
+
+      </td>
+
+      <td>
+
+            1.90E+04<br>2.09E+04<br>3.02E+04<br>3.48E+04
+
+      </td>
+
+      <td>
+
+            28<br>42<br>60<br>75
+
+      </td>
+
+      <td>
+
+            0<br>22<br>0<br>22
+
+      </td>
+
+      <td>
+
+            9083<br>1.27E+04<br>2.70E+04<br>3.10E+04
+
+      </td>
+
+      <td>
+
+            9061<br>1.28E+04<br>2.70E+04<br>3.11E+04
+
+      </td>
+
+      <td>
+
+            1.90E+04<br>2.09E+04<br>3.02E+04<br>3.48E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            swaptions
+
+      </td>
+
+      <td>
+
+            -ns&nbsp;128&nbsp;-sm&nbsp;50000&nbsp;-nt&nbsp;16
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.133<br>0.350<br>5206<br>7061
+
+      </td>
+
+      <td>
+
+            0.026 (5.2x)<br>0.041 (8.5x)<br>848 (6.1x)<br>929 (7.6x)
+
+      </td>
+
+      <td>
+
+            0.088<br>0.228<br>1591<br>1830
+
+      </td>
+
+      <td>
+
+            0.000<br>662<br>0.000<br>264
+
+      </td>
+
+      <td>
+
+            6.39E+09<br>7.20E+09<br>2.92E+09<br>4.84E+09
+
+      </td>
+
+      <td>
+
+            1.51<br>1.54<br>3.27<br>3.86
+
+      </td>
+
+      <td>
+
+            0.005<br>0.083<br>0.033<br>0.087
+
+      </td>
+
+      <td>
+
+            22.3<br>23.9<br>43.5<br>57.2
+
+      </td>
+
+      <td>
+
+            22.3<br>24.0<br>43.5<br>57.3
+
+      </td>
+
+      <td>
+
+            0.062<br>0.026<br>0.485<br>0.768
+
+      </td>
+
+      <td>
+
+            0<br>1018<br>0<br>1018
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            9.61E+09<br>1.11E+10<br>9.56E+09<br>1.87E+10
+
+      </td>
+
+      <td>
+
+            2.10E+09<br>2.28E+09<br>4.39E+09<br>5.91E+09
+
+      </td>
+
+      <td>
+
+            5.92E+06<br>1.50E+07<br>2.61E+08<br>3.87E+08
+
+      </td>
+
+      <td>
+
+            6.28E+06<br>1.41E+07<br>2.61E+08<br>3.72E+08
+
+      </td>
+
+      <td>
+
+            4.45E+10<br>4.93E+10<br>1.01E+11<br>1.36E+11
+
+      </td>
+
+      <td>
+
+            6.82E+10<br>7.60E+10<br>7.58E+10<br>1.06E+11
+
+      </td>
+
+      <td>
+
+            4.22E+10<br>4.73E+10<br>9.21E+10<br>1.22E+11
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1171<br>1115<br>2205<br>1900
+
+      </td>
+
+      <td>
+
+            3.22E+04<br>3.40E+04<br>6.14E+04<br>7.17E+04
+
+      </td>
+
+      <td>
+
+            34<br>42<br>128<br>135
+
+      </td>
+
+      <td>
+
+            0<br>22<br>0<br>21
+
+      </td>
+
+      <td>
+
+            1754<br>7941<br>3.77E+04<br>4.55E+04
+
+      </td>
+
+      <td>
+
+            1749<br>8700<br>3.77E+04<br>4.66E+04
+
+      </td>
+
+      <td>
+
+            3.22E+04<br>3.40E+04<br>6.14E+04<br>7.17E+04
+
+      </td>
+
+</tr>
+
+
+<tr>
+
+      <td>
+
+            word_count
+
+      </td>
+
+      <td>
+
+            word_100MB.txt
+
+      </td>
+
+      <td>
+
+            pthread<br>Threading&nbsp;lib.<br>OS&nbsp;support<br>Total&nbsp;overheads
+
+      </td>
+
+      <td>
+
+            0.141<br>4.73<br>3066<br>4121
+
+      </td>
+
+      <td>
+
+            0.028 (5.0x)<br>0.266 (17.8x)<br>482 (6.4x)<br>508 (8.1x)
+
+      </td>
+
+      <td>
+
+            0.114<br>3.15<br>1271<br>1435
+
+      </td>
+
+      <td>
+
+            0.000<br>1.45E+04<br>0.000<br>7562
+
+      </td>
+
+      <td>
+
+            2.30E+09<br>5.48E+09<br>1.18E+09<br>2.80E+09
+
+      </td>
+
+      <td>
+
+            1.23<br>1.50<br>2.41<br>2.87
+
+      </td>
+
+      <td>
+
+            0.113<br>0.480<br>0.160<br>0.642
+
+      </td>
+
+      <td>
+
+            15.8<br>19.6<br>28.9<br>36.6
+
+      </td>
+
+      <td>
+
+            15.9<br>20.0<br>29.0<br>37.0
+
+      </td>
+
+      <td>
+
+            0.090<br>0.047<br>0.294<br>0.283
+
+      </td>
+
+      <td>
+
+            0<br>2.17E+04<br>0<br>2.17E+04
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            2.84E+09<br>8.21E+09<br>2.84E+09<br>8.05E+09
+
+      </td>
+
+      <td>
+
+            1.45E+09<br>1.87E+09<br>2.83E+09<br>3.78E+09
+
+      </td>
+
+      <td>
+
+            6.89E+08<br>7.19E+08<br>8.34E+08<br>8.83E+08
+
+      </td>
+
+      <td>
+
+            6.86E+08<br>7.05E+08<br>8.22E+08<br>8.77E+08
+
+      </td>
+
+      <td>
+
+            2.85E+10<br>4.05E+10<br>6.43E+10<br>8.73E+10
+
+      </td>
+
+      <td>
+
+            1.65E+10<br>3.45E+10<br>1.98E+10<br>3.82E+10
+
+      </td>
+
+      <td>
+
+            2.94E+10<br>3.87E+10<br>6.04E+10<br>7.84E+10
+
+      </td>
+
+      <td>
+
+            0<br>0<br>0<br>0
+
+      </td>
+
+      <td>
+
+            1374<br>1102<br>1992<br>1804
+
+      </td>
+
+      <td>
+
+            2.79E+04<br>3.35E+04<br>4.74E+04<br>5.62E+04
+
+      </td>
+
+      <td>
+
+            102<br>130<br>172<br>228
+
+      </td>
+
+      <td>
+
+            0<br>44<br>0<br>44
+
+      </td>
+
+      <td>
+
+            6.06E+04<br>9.34E+04<br>6.85E+04<br>1.35E+05
+
+      </td>
+
+      <td>
+
+            6.06E+04<br>1.15E+05<br>6.85E+04<br>1.56E+05
+
+      </td>
+
+      <td>
+
+            2.79E+04<br>3.35E+04<br>4.74E+04<br>5.62E+04
+
+      </td>
+
+</tr>
+
+</table>
+
+<h2 id="raw_data">Raw JSON data logs</h2>
+
+The raw measurement values written by the benchmark can found here:
+
+<ul>
+<li> <a href="https://www.dropbox.com/s/1q9q0o1x1kgb2yh/increasing-threads.json?dl=1">increasing-threads.json</a> </li>
+<li> <a href="https://www.dropbox.com/s/xgcwsx552e5zhea/increasing-worksize.json?dl=1">increasing-worksize.json</a> </li>
+</ul>
+
+</body>
+</html>
