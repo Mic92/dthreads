@@ -1,16 +1,18 @@
-Tthread: Tracing Multithreading library
-----------------------------------------
+Inspector
+---------
 
-tthread is based on [dthreads](https://github.com/emeryberger/dthreads)
+Builds Data Provenance Graph for Multi-Threaded Programms
+using [tthread](src/tthread) and
+[Intel Pt](https://software.intel.com/en-us/blogs/2013/09/18/processor-tracing).
 
-### TThread-Python ###
+For further information can be found [here](src/inspector)
 
-For python api and scripts, see [here](src/tthread-python/README.md)
+## TThread ##
 
-### Inspector ###
+- TThread is a Tracing Multithreading library
+- TThread is based on [dthreads](https://github.com/emeryberger/dthreads)
+- For python api and scripts, see [here](src/tthread-python/README.md)
 
-Combines tthread and [Intel Pt](https://software.intel.com/en-us/blogs/2013/09/18/processor-tracing)
-to build a concurrent data provenance graph. See [here](src/inspector/README.md)
 
 ### Building Tthread ###
 
@@ -73,7 +75,3 @@ To read the access log at runtime, take a look at [Usage.md](Usage.md)
 cmake -DTESTING=ON .
 make test
 ```
-
-### Run Benchmarks ###
-
-see [eval/README.md](eval/README.md)
