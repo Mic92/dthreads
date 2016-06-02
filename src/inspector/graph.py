@@ -105,7 +105,11 @@ def deserialize(json_file):
 
 
 def tmean(df):
-    return (df.sum() - df.min() - df.max()) / (df.count() - 2)
+    def transform(x):
+        if x.dtype == list:
+            return x.first()
+        return (x.sum() - x.min() - x.max()) / (x.count() - 2)
+    return df.aggregate(transform)
 
 
 def relative_to_pthread(df):
