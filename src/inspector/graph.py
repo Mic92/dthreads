@@ -233,7 +233,6 @@ class Graph:
                             y=y,
                             hue="variant",
                             data=by_lib,
-                            palette="Greys",
                             hue_order=["small", "medium", "large"],
                             ax=ax1)
             g.set_ylabel("Overhead w.r.t native execution")
@@ -281,7 +280,6 @@ class Graph:
                                 y=y,
                                 hue="threads",
                                 data=by_lib,
-                                palette="Greys",
                                 hue_order=[2, 4, 8, 16, 14, 15],
                                 ax=ax)
                 g.set_xlabel("")
@@ -324,7 +322,6 @@ class Graph:
                                 y=y,
                                 hue="library",
                                 data=by_thread,
-                                palette="Greys",
                                 hue_order=["Total overheads",
                                            "Threading lib.",
                                            "OS support"],
