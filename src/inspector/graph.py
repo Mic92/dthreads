@@ -107,7 +107,7 @@ def deserialize(json_file):
 def tmean(df):
     def transform(x):
         if x.dtype == list:
-            return x.first()
+            return (x.max(),)
         return (x.sum() - x.min() - x.max()) / (x.count() - 2)
     return df.aggregate(transform)
 
