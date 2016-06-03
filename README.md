@@ -7,6 +7,8 @@ using [tthread](src/tthread) and
 
 For further information can be found [here](src/inspector)
 
+[Paper](http://wp.mpi-sws.org/bhatotia/files/2016/04/PID4226263.pdf) on Inspector published at ICDCS 2016
+
 ## TThread ##
 
 - TThread is a Tracing Multithreading library
