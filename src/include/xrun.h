@@ -45,6 +45,10 @@
 
 #include "xlogger.h"
 
+#include "xtime.h"
+
+#include "xsched.h"
+
 #include "objectheader.h"
 
 class xrun {
@@ -59,14 +63,17 @@ private:
   bool _token_holding;
   xmemory& _memory;
   xlogger& _logger;
+  xsched& _sched;
   xthread _thread;
+  xtime _cpu_time;
   determ& _determ;
 
 public:
 
   /// @brief Initialize the system.
   xrun(xmemory& memory,
-       xlogger& logger) :
+       xlogger& logger,
+       xsched& xsched) :
     _isCopyOnWrite(false),
     _thread_index(0),
     _fence_enabled(false),
@@ -75,6 +82,7 @@ public:
     _token_holding(false),
     _memory(memory),
     _logger(logger),
+    _sched(xsched),
     _thread(*this),
     _determ(determ::newInstance(memory))
   {
@@ -86,6 +94,8 @@ public:
     _thread.setId(pid);
 
     logger.setThread(&_thread);
+
+    _sched.setThread(&_thread);
 
     // xmemory.initialize should happen before others
     _memory.initialize(logger);
@@ -147,6 +157,7 @@ public:
     // We should cleanup all blocks information inherited from the parent.
     _memory.cleanupOwnedBlocks();
 
+    _cpu_time.init();
     return _thread_index;
   }
 
@@ -169,6 +180,12 @@ public:
 
     // Remove current thread and decrease the fence
     _determ.deregisterThread(_thread_index);
+
+    // tthread::EventData d;
+    // d.end.cpu_time = _cpu_time.get();
+    // _logger.add(tthread::logevent(tthread::logevent::END,
+    //                               caller,
+    //                               d));
 
     _logger.add(tthread::logevent(tthread::logevent::FINISH,
                                   caller,
@@ -712,15 +729,19 @@ public:
 
     _thread.startThunk();
 
+    _sched.trigger();
+
     tthread::EventData d;
     d.thunk.id = _thread.getThunkId();
+    d.thunk.cpu = _sched.getCPU();
 
     tthread::logevent e(tthread::logevent::THUNK, caller, d);
-    e.setThreadId(_thread.getId());
+    e.setThreadId(_thread_index);
     _logger.add(e);
 
     // Now start.
     _memory.begin();
+    _cpu_time.start();
   }
 
   /// @brief End a transaction, aborting it if necessary.
@@ -730,6 +751,11 @@ public:
     if (!_isCopyOnWrite) {
       return;
     }
+    tthread::EventData d;
+    d.end.cpu_time = _cpu_time.get();
+    _logger.add(tthread::logevent(tthread::logevent::END,
+                                  NULL,
+                                  d));
 
     // Commit all private modifications to shared mapping
     _memory.commit();

@@ -13,8 +13,9 @@ def abort(msg):
     sys.exit(1)
 
 formats = {
-        "tsv": formats.TsvWriter,
-        "tsv2": formats.Tsv2Writer,
+    "dtl": formats.DTLWriter,
+    "tsv": formats.TsvWriter,
+    "tsv2": formats.Tsv2Writer,
 }
 
 supported_formats = ", ".join(formats.keys())
@@ -35,9 +36,9 @@ def parse_arguments():
     parser.add_argument("--output", nargs="?",
                         help=h2)
     h3 = "default format to write access log " \
-         "(supported: %s; default: tsv)" % supported_formats
+         "(supported: %s; default: dtl)" % supported_formats
     parser.add_argument("--format", nargs="?",
-                        default="tsv",
+                        default="dtl",
                         help=h3)
     parser.add_argument("command", nargs=1,
                         help="command to execute with")

@@ -22,7 +22,10 @@ set_target_properties(tthread PROPERTIES
   COMPILE_FEATURES cxx_variadic_macros cxx_static_assert cxx_auto_type
   LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT};${LIBDL_LIBRARIES}"
 )
+target_link_libraries(tthread papi)
 
 install(TARGETS tthread
   DESTINATION ${LIB_INSTALL_DIR}
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+add_subdirectory(schas)

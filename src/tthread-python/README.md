@@ -96,3 +96,18 @@ write   140049782269278 8768    140041149788224 heap
 ```
 
 As it is tab-seperated in can be imported into spreadsheet application without any additional tools.
+
+# Disable ASLR
+
+For some benchmarks it is important to disable address space layout
+randomization. One way to do this is to start a new shell as:
+
+```bash
+setarch $(uname -m) -R $SHELL
+```
+
+Or prefix logger script:
+
+```bash
+$ setarch $(uname -m) -R ./bin/tthread .
+```

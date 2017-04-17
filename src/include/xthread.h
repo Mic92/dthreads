@@ -42,7 +42,7 @@ public:
   /// Current nesting level (i.e., how deep we are in recursive threads).
   unsigned int _nestingLevel;
 
-  /// What is this thread's PID?
+  /// Thread's PID
   int _tid;
 
   xrun& _run;
@@ -68,6 +68,7 @@ public:
 
   // The following functions are trying to get id or thread index of specified
   // thread.
+  int getThreadIndex();
   int getThreadIndex(void *v);
   int getThreadPid(void *v);
 

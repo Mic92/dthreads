@@ -13,9 +13,10 @@ default_event_fields = [
         # event specific data
         # ...
         ]
-thunk_event_data = [("id", "i")]
+thunk_event_data = [("id", "i"), ("cpu", "i")]
 memory_event_data = [("address", "Q")]
 finish_event_data = [("placeholder", "i")]
+end_event_data = [("cpu_time", "Q")]
 
 header_fields = [
         # Used to identify log file type
@@ -47,8 +48,9 @@ ReadEvent = make_type("ReadEvent", default_event_fields + memory_event_data)
 ThunkEvent = make_type("ThunkEvent", default_event_fields + thunk_event_data)
 FinishEvent = make_type("FinishEvent",
                         default_event_fields + finish_event_data)
+EndEvent = make_type("EndEvent", default_event_fields + end_event_data)
 
-events = [InvalidEvent, WriteEvent, ReadEvent, ThunkEvent, FinishEvent]
+events = [InvalidEvent, WriteEvent, ReadEvent, ThunkEvent, FinishEvent, EndEvent]
 log_event_size = max([e.size for e in events])
 
 Header = make_type("Header", header_fields)

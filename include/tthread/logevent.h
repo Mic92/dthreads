@@ -16,12 +16,17 @@ typedef union EventData {
   struct {
     // synchronisation point within on thread
     int id;
+    int cpu;
   } thunk;
   struct {
     // memory address at which the first page fault was triggered
     const void *address;
   } memory;
-  struct {} finish; // no data so far
+  struct {} finish;
+  struct {
+    // cpu time of a thunk
+    long long cpu_time;
+  } end;
 } Data;
 
 class _PUBLIC_ logevent {
@@ -32,7 +37,8 @@ public:
     WRITE = 1,
     READ = 2,
     THUNK = 3,
-    FINISH = 4
+    FINISH = 4,
+    END = 5
   };
 
 private:

@@ -53,7 +53,7 @@ public:
              tthread::logevent::READ;
     tthread::EventData m;
 
-    m.memory.address = addr;
+    m.memory.address = (void *)((uintptr_t)addr >> xdefines::PageShift);
 
     tthread::logevent e(t, issuerAddress, m);
 

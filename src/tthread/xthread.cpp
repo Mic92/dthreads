@@ -59,6 +59,11 @@ int xthread::getThreadIndex(void *v) {
   return t->threadIndex;
 }
 
+/// @brief Get thread index for this thread.
+int xthread::getThreadIndex() {
+  return _run.threadindex();
+}
+
 /// @brief Get thread tid for this thread.
 int xthread::getThreadPid(void *v) {
   ASSERT(v != NULL);

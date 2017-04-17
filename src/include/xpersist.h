@@ -468,7 +468,8 @@ public:
              tthread::logevent::READ;
     tthread::EventData m;
 
-    m.memory.address = addr;
+    m.memory.address = (void *)((uintptr_t)addr >> xdefines::PageShift);
+
     _logger->add(tthread::logevent(t, issuerAddress, m));
 
     if (is_write) {

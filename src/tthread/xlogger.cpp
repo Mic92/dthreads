@@ -12,7 +12,7 @@ void xlogger::add(tthread::logevent e) {
   // FIXME later on, _thread should be logged
   // as an seperate event
   if (_thread != NULL) {
-    e.setThreadId(_thread->getId());
+    e.setThreadId(_thread->getThreadIndex());
   }
 
   unsigned long next = xatomic::increment_and_return(_next, 1);

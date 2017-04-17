@@ -70,6 +70,7 @@ public:
   enum { MAX_GLOBALS_SIZE = 1048576UL * 40 };
   enum { INTERNALHEAP_SIZE = 1048576UL * 100 }; // FIXME 10M
   enum { PageSize = 4096UL };
+  enum { PageShift = 12UL };
   enum { PAGE_SIZE_MASK = (PageSize - 1) };
   enum { NUM_HEAPS = 32 };                      // was 16
   enum { LOCK_OWNER_BUDGET = 10 };

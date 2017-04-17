@@ -15,6 +15,8 @@ if(NOT LIBDL_FOUND)
   message(SEND_ERROR "libdl required")
 endif(NOT LIBDL_FOUND)
 
+find_package(PAPI REQUIRED)
+
 INCLUDE (CheckCXXSourceCompiles)
 CHECK_CXX_SOURCE_COMPILES(
 "
